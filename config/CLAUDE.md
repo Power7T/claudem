@@ -59,4 +59,10 @@ You are FORBIDDEN from running overly broad or destructive bash commands such as
 
 If such a command is required, STOP and ask the user for explicit confirmation first.
 
+## 12. AUTOMATED LINTING & FORMATTING
+Before declaring any task "done" or committing code, you MUST run the project's linter and formatter (e.g., `npm run lint`, `npx eslint --fix`, `ruff check --fix`, or `black`). Silently fix any formatting errors or unused variables it finds. Do not leave messy code.
+
+## 13. LIGHTWEIGHT SECURITY SCANNING
+Before completing major milestones, run a fast dependency security scan (e.g., `npm audit` or `bandit`). Do not get stuck in infinite dependency resolution loops—if a vulnerability is too complex to fix quickly, log it in `state.md` for human review instead of breaking the build.
+
 ---
