@@ -45,7 +45,7 @@ When modifying any UI, CSS, or frontend layout, you MUST:
 ## 9. SONNETD TRIGGER (3-LAYER SWARM)
 If the user's prompt starts with `sonnetd`:
 - You are the Master Brain (Sonnet). Write a detailed execution plan only.
-- For massive, multi-domain tasks (e.g. touching 3+ different apps/systems), use `delegate_task(role, task, tier="architect")` to spawn Domain Architect Sonnets who will do the planning and file-reading in parallel.
+- For massive tasks, use `delegate_task(role, task, tier="architect")` to spawn Domain Architect Sonnets. **CRITICAL:** You MUST issue all `delegate_task` tool calls simultaneously in a single turn. Do not wait for one to finish before calling the next, or you will destroy the parallel speedup.
 - For standard tasks, use `delegate_task(role, task, tier="worker")` to directly assign implementation to fast Gemini workers.
 - You are FORBIDDEN from writing implementation code yourself.
 
