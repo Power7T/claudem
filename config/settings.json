@@ -1,0 +1,49 @@
+{
+  "permissions": {
+    "defaultMode": "auto"
+  },
+  "model": "opus",
+  "apiTimeout": 60000,
+  "smallFastModel": "agy/gemini-3.5-flash-low",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "rtk hook claude"
+          }
+        ]
+      }
+    ]
+  },
+  "extraKnownMarketplaces": {
+    "claude-plugins-official": {
+      "source": {
+        "source": "github",
+        "repo": "anthropics/claude-plugins-official"
+      }
+    }
+  },
+  "effortLevel": "high",
+  "mcpServers": {
+    "swarm": {
+      "command": "python3",
+      "args": [
+        "/Users/<your-username>/.omniroute/swarm_mcp.py"
+      ],
+      "timeout": 30000,
+      "initializationTimeout": 15000
+    },
+    "llmlingua": {
+      "command": "python3",
+      "args": [
+        "/path/to/llmlingua/server.py"
+      ],
+      "timeout": 30000,
+      "initializationTimeout": 15000
+    }
+  },
+  "customInstructions": "IMPORTANT: All operating rules are defined in ~/.claude/CLAUDE.md. Read and follow them on every session."
+}

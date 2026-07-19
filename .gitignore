@@ -1,0 +1,68 @@
+# Secrets and credentials
+.env
+*.env
+.env.*
+!.env.example
+
+# API keys
+secrets/
+*.key
+*.pem
+*.p12
+
+# OmniRoute local database (contains API keys)
+*.sqlite
+storage.sqlite
+
+# Local user-specific paths
+*.local.json
+settings.local.json
+
+# Claude Code runtime files
+sessions/
+history.jsonl
+cache/
+telemetry/
+paste-cache/
+shell-snapshots/
+mcp-needs-auth-cache.json
+stats-cache.json
+backups/
+downloads/
+file-history/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+.Python
+venv/
+env/
+.venv/
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.Spotlight-V100
+.Trashes
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+logs/
