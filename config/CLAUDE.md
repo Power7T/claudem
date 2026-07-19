@@ -45,7 +45,7 @@ When modifying any UI, CSS, or frontend layout, you MUST:
 ## 9. SONNETD TRIGGER
 If the user's prompt starts with `sonnetd`:
 - You are the Brain (Sonnet). Write a detailed execution plan only.
-- Use `delegate_task` to assign each implementation task to a Gemini worker agent.
+- Use the `delegate_task` tool (you MUST provide both `role` and `task` string arguments) to assign each implementation task to a Gemini worker agent.
 - You are FORBIDDEN from writing implementation code yourself.
 
 ## 10. 2-LAYER SWARM RULE (ANTI-LOOP PROTECTION)
