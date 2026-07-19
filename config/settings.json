@@ -2,7 +2,7 @@
   "permissions": {
     "defaultMode": "auto"
   },
-  "model": "opus",
+  "model": "agy/claude-sonnet-4-6",
   "apiTimeout": 60000,
   "smallFastModel": "agy/gemini-3.5-flash-low",
   "hooks": {
@@ -31,7 +31,7 @@
     "swarm": {
       "command": "python3",
       "args": [
-        "/Users/<your-username>/.omniroute/swarm_mcp.py"
+        "/Users/chandan/.omniroute/swarm_mcp.py"
       ],
       "timeout": 30000,
       "initializationTimeout": 15000
@@ -39,7 +39,7 @@
     "llmlingua": {
       "command": "python3",
       "args": [
-        "/path/to/llmlingua/server.py"
+        "/Users/chandan/.gemini-profiles/profile8/.gemini/antigravity-cli/mcp/llmlingua/server.py"
       ],
       "timeout": 30000,
       "initializationTimeout": 15000
