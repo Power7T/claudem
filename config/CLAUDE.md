@@ -42,14 +42,15 @@ When modifying any UI, CSS, or frontend layout, you MUST:
 2. Read the screenshot file using your file tools
 3. Visually verify the layout is correct before declaring done
 
-## 9. SONNETD TRIGGER
+## 9. SONNETD TRIGGER (3-LAYER SWARM)
 If the user's prompt starts with `sonnetd`:
-- You are the Brain (Sonnet). Write a detailed execution plan only.
-- Use the `delegate_task` tool (you MUST provide both `role` and `task` string arguments) to assign each implementation task to a Gemini worker agent.
+- You are the Master Brain (Sonnet). Write a detailed execution plan only.
+- For massive, multi-domain tasks (e.g. touching 3+ different apps/systems), use `delegate_task(role, task, tier="architect")` to spawn Domain Architect Sonnets who will do the planning and file-reading in parallel.
+- For standard tasks, use `delegate_task(role, task, tier="worker")` to directly assign implementation to fast Gemini workers.
 - You are FORBIDDEN from writing implementation code yourself.
 
-## 10. 2-LAYER SWARM RULE (ANTI-LOOP PROTECTION)
-Worker agents spawned via `delegate_task` are STRICTLY FORBIDDEN from spawning their own sub-agents. Only the top-level Brain agent may delegate. Workers must write code themselves and return results directly. This prevents infinite delegation loops and token waste.
+## 10. 3-LAYER SWARM RULE (ANTI-LOOP PROTECTION)
+Worker agents (Gemini) spawned via `delegate_task` are STRICTLY FORBIDDEN from spawning their own sub-agents. Master Brains can spawn Architects, and Architects can spawn Workers, but Workers MUST write code themselves and return results directly. This prevents infinite delegation loops and token waste.
 
 ## 11. BASH SAFETY RULE
 You are FORBIDDEN from running overly broad or destructive bash commands such as:
