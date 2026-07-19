@@ -76,7 +76,7 @@ Two MCP (Model Context Protocol) servers extend claudem's capabilities:
 ### Swarm MCP (`swarm_mcp.py`)
 Provides `delegate_task` tool. Allows the primary agent to spawn background sub-agents that run in parallel and return results when complete.
 
-**The 2-Layer Rule:** Only the primary agent (Layer 1) can use `delegate_task`. Sub-agents (Layer 2) are explicitly forbidden from spawning further sub-agents. This prevents infinite delegation loops and "Agent Bombing" (agents spending all tokens delegating instead of working).
+**The 3-Layer Swarm Rule:** Allows the primary agent (Layer 1) to spawn Domain Architects (Layer 2) for massive tasks, or Gemini Workers (Layer 3) directly for standard tasks. Workers are explicitly forbidden from spawning further sub-agents. This prevents infinite delegation loops and "Agent Bombing".
 
 ### LLMLingua-2 MCP
 Provides `compress_prompt` tool. Uses the LLMLingua-2 neural compression model to reduce any large text input by 30-90% before sending to the AI. Preserves semantic meaning while dramatically reducing token usage.
@@ -88,23 +88,29 @@ Provides `compress_prompt` tool. Uses the LLMLingua-2 neural compression model t
 When you prefix a prompt with `sonnetd`, you explicitly activate the Brain+Worker pipeline:
 
 ```
-sonnetd [your complex task]
+sonnetd [your massive multi-system task]
          │
          ▼
-OmniRoute forces routing → Claude Sonnet 4.6 (Thinking)
+OmniRoute forces routing → Layer 1: Master Brain (Claude Sonnet 4.6)
          │
          ▼
-Sonnet reads task → writes execution plan (not code)
+Sonnet parses prompt → identifies 3 distinct systems (no file reading)
          │
-         ├─── delegate_task ──▶ Gemini Worker 1 (Frontend)
-         ├─── delegate_task ──▶ Gemini Worker 2 (Backend)
-         └─── delegate_task ──▶ Gemini Worker 3 (Database)
+         ├─── delegate_task(tier="architect") ──▶ Layer 2: Firestick Architect
+         ├─── delegate_task(tier="architect") ──▶ Layer 2: Leadflow Architect
+         └─── delegate_task(tier="architect") ──▶ Layer 2: Router Architect
                                         │
                                         ▼
-                              All 3 work in parallel
+                 Architects simultaneously read specific files
+                 and build flawless execution plans in parallel
                                         │
                                         ▼
-                              Results returned to Sonnet
+             ├── delegate_task(tier="worker") ──▶ Layer 3: Gemini Coder
+             ├── delegate_task(tier="worker") ──▶ Layer 3: Gemini Coder
+             └── delegate_task(tier="worker") ──▶ Layer 3: Gemini Coder
+                                        │
+                                        ▼
+                              Results return to Master
                                         │
                                         ▼
                               Sonnet integrates + reviews

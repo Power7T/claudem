@@ -25,43 +25,48 @@ It combines four layers of intelligence:
 You (Terminal)
     │
     ▼
-claudem alias  ──────────────────────────────────────────────────────────
-    │                                                                      │
-    ▼                                                                      ▼
+claudem alias  ─────────────────────────────────────────────────────────────
+    │                                                                        │
+    ▼                                                                        ▼
 ~/.claude/CLAUDE.md          ~/.claude/settings.json
-(11 mandatory SDE rules)     (MCP servers, model config, timeouts)
+(13 mandatory SDE rules)     (MCP servers, model config, timeouts)
     │
     ▼
-OmniRoute Proxy  (task-aware routing)
-    ├── Complex reasoning   ──▶  Claude Sonnet 4.6 (Thinking)
-    ├── Code generation     ──▶  Gemini 3.1 Pro High
-    ├── Fast boilerplate    ──▶  Gemini 3.5 Flash
-    └── Fallback            ──▶  Next available model (zero downtime)
+OmniRoute Proxy  (Zero-downtime task-aware routing)
          │
          ▼
-    Swarm MCP  (parallel agent delegation)
-         ├── Worker Agent 1  ──▶  Gemini (writes frontend)
-         ├── Worker Agent 2  ──▶  Gemini (writes backend)
-         └── Worker Agent 3  ──▶  Gemini (writes DB schema)
+    Swarm MCP  (3-Layer Hierarchical Delegation)
+         │
+         ├── Layer 1: Master Brain (Claude Sonnet 4.6)
+         │    └─ Parses prompt, issues parallel architectural assignments.
+         │
+         ├── Layer 2: Domain Architects (Parallel Sub-Sonnets)
+         │    └─ Dynamically spawned for massive, multi-system tasks. 
+         │    └─ Reads specific codebase in parallel (2 mins vs 25 mins).
+         │
+         └── Layer 3: Gemini Workers (Coders)
+              └─ Receives flawless execution plans, writes code at lightning speed.
 ```
 
 ---
 
-## The 11 Mandatory SDE Rules (CLAUDE.md)
+## The 13 Mandatory SDE Rules (CLAUDE.md)
 
 Every session, `claudem` loads these rules from `~/.claude/CLAUDE.md`:
 
-1. **SWARM ORCHESTRATION** — Delegates multiple disconnected tasks to parallel agents
+1. **SWARM ORCHESTRATION** — Delegates disconnected tasks to parallel agents
 2. **SKELETON MAPPING** — Grep file structure before reading entire files
-3. **DYNAMIC PRE-COMPRESSION** — LLMLingua-2 compresses files >150 lines before reading (0.3 ratio for code, 0.1 for logs)
+3. **DYNAMIC PRE-COMPRESSION** — LLMLingua-2 compresses files >150 lines (0.3 ratio for code, 0.1 for logs)
 4. **CONTEXT AMNESIA** — Auto git commit + state.md reset after 50k tokens
 5. **SELF-HEALING LOOP** — Forbidden from saying "done" without running the code first
 6. **ATOMIC MICRO-COMMITS** — `git commit` after every single individual task
 7. **STATE LOG** — Maintains `state.md` with architectural decisions
-8. **VISUAL REGRESSION QA** — Puppeteer screenshot + AI vision check on all UI changes
-9. **SONNETD TRIGGER** — `sonnetd:` prefix forces Brain+Worker Swarm mode
-10. **2-LAYER SWARM RULE** — Workers cannot spawn sub-agents (prevents infinite loops)
-11. **BASH SAFETY RULE** — Forbidden from running `rm -rf`, `find /` without explicit user approval
+8. **VISUAL REGRESSION QA** — Puppeteer screenshot + AI vision check on UI changes
+9. **SONNETD TRIGGER** — `sonnetd:` prefix forces 3-Layer Brain+Architect+Worker Swarm mode
+10. **3-LAYER SWARM RULE** — Master → Architects → Workers (Workers cannot spawn agents)
+11. **BASH SAFETY RULE** — Forbidden from running `rm -rf`, `find /` without user approval
+12. **AUTOMATED LINTING** — Agent automatically runs and fixes `eslint`/`ruff` errors before finishing
+13. **SECURITY SCANNING** — Fast dependency checks (`npm audit`/`bandit`) before production milestones
 
 ---
 
