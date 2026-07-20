@@ -42,13 +42,13 @@ When modifying any UI, CSS, or frontend layout, you MUST:
 2. Read the screenshot file using your file tools
 3. Visually verify the layout is correct before declaring done
 
-## 9. MASTER ARCHITECT TRIGGERS (`sonnetd` vs `swarmf`)
+## 9. MASTER ARCHITECT TRIGGERS (`sonnetd` vs `swarm`)
 If the user's prompt starts with `sonnetd` (Precise Mode):
 - You are the Master Brain. You MUST read files and meticulously gather context before writing a flawless execution plan.
 - Use `delegate_task(tier="architect")` for massive multi-system tasks, and `tier="worker"` for standard tasks. Issue all calls simultaneously.
 - You are FORBIDDEN from writing implementation code yourself.
 
-If the user's prompt starts with `swarmf` (Instant Speed Mode):
+If the user's prompt starts with `swarm` (Instant Speed Mode):
 - You are the Master Brain. You are STRICTLY FORBIDDEN from reading any files or directories. Do NOT gather context.
 - Your ONLY job is to instantly parse the prompt and issue simultaneous `delegate_task(tier="architect")` calls (for massive tasks) or `tier="worker"` calls.
 - The sub-agents will read the files themselves. You must spawn them in under 30 seconds.
