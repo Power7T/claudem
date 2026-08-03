@@ -39,7 +39,7 @@ echo "✅ OmniRoute installed"
 
 # --- Install LLMLingua-2 ---
 echo ""
-echo "→ Installing LLMLingua-2..."
+echo "→ Installing LLMLingua-2 Python package..."
 pip3 install llmlingua --quiet
 echo "✅ LLMLingua-2 installed"
 
@@ -53,28 +53,33 @@ if [ -f "$HOME/.claude/settings.json" ]; then
   echo "  ℹ️  Backed up existing settings.json → settings.json.backup"
 fi
 
-# Replace username placeholder in settings
-sed "s|<your-username>|$(whoami)|g" "$(dirname "$0")/../config/settings.json" > "$HOME/.claude/settings.json"
+# Replace placeholder with real home path in settings
+sed "s|<your-home>|$HOME|g" "$(dirname "$0")/../config/settings.json" > "$HOME/.claude/settings.json"
 echo "✅ settings.json applied"
 
 # Apply CLAUDE.md rules
 cp "$(dirname "$0")/../config/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
 echo "✅ CLAUDE.md rules applied"
 
-# --- Add alias ---
+# --- Add claudem shell functions to .zshrc ---
 echo ""
-echo "→ Adding claudem alias to ~/.zshrc..."
+echo "→ Installing claudem shell functions to ~/.zshrc..."
 
-ALIAS_LINE="alias claudem='HOME=/Users/$(whoami) claude'"
-
-if ! grep -q "alias claudem=" "$HOME/.zshrc" 2>/dev/null; then
+if ! grep -q "claudem()" "$HOME/.zshrc" 2>/dev/null; then
   echo "" >> "$HOME/.zshrc"
-  echo "# claudem — Autonomous AI Coding Agent" >> "$HOME/.zshrc"
-  echo "$ALIAS_LINE" >> "$HOME/.zshrc"
-  echo "✅ Alias added to ~/.zshrc"
+  echo "# ── claudem + agym (OmniRoute Claude Code selector) ─────────────────────────" >> "$HOME/.zshrc"
+  cat "$(dirname "$0")/../config/claudem.sh" >> "$HOME/.zshrc"
+  echo "✅ claudem functions installed to ~/.zshrc"
 else
-  echo "ℹ️  claudem alias already exists in ~/.zshrc"
+  echo "ℹ️  claudem function already exists in ~/.zshrc — skipping (update manually if needed)"
 fi
+
+# --- Copy swarm_mcp.py to OmniRoute data dir ---
+echo ""
+echo "→ Installing Swarm MCP server..."
+mkdir -p "$HOME/.omniroute"
+cp "$(dirname "$0")/swarm_mcp.py" "$HOME/.omniroute/swarm_mcp.py"
+echo "✅ swarm_mcp.py installed to ~/.omniroute/"
 
 # --- Done ---
 echo ""
@@ -82,9 +87,13 @@ echo "================================"
 echo "✅ claudem setup complete!"
 echo ""
 echo "Next steps:"
-echo "  1. Run: source ~/.zshrc"
-echo "  2. Run: omniroute setup  (add your API keys)"
-echo "  3. Run: claudem  (start your first session)"
+echo "  1. source ~/.zshrc"
+echo "  2. omniroute serve            (start the proxy)"
+echo "  3. omniroute providers add google  (add your AGY/Google AI Pro account)"
+echo "  4. claudem                    (start your first session)"
 echo ""
-echo "For Brain+Worker Swarm mode, prefix any prompt with 'sonnetd'"
+echo "Tips:"
+echo "  · Prefix any complex prompt with 'sonnetd' to activate Brain+Worker Swarm mode"
+echo "  · Use 'agym --list' to see all available models"
+echo "  · Use 'agym-status' to check OmniRoute health"
 echo "================================"

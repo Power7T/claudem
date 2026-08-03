@@ -171,15 +171,11 @@ Copy [`config/CLAUDE.md`](config/CLAUDE.md) to `~/.claude/CLAUDE.md`:
 cp config/CLAUDE.md ~/.claude/CLAUDE.md
 ```
 
-### 4. Add the claudem Alias
+### 4. The Interactive UI
 
-Add to your `~/.zshrc`:
+The setup script automatically injects the `claudem` bash UI into your `~/.zshrc`. This provides a dynamic model selector, isolated profile environments, and fuzzy matching for combos!
 
-```bash
-alias claudem='HOME=/Users/<your-username> claude'
-```
-
-Then reload:
+Just reload your shell:
 
 ```bash
 source ~/.zshrc
