@@ -588,10 +588,12 @@ setup-claude() {
 # Android key authorization timeout.
 _agym_adb_connect_background() {
   (
-    local fs_ip="192.168.1.3:5555"
+    # Read device IPs from ~/.firestick_ip and ~/.vivo_ip
+    # Create those files with the device's IP:port (e.g. echo "192.168.1.x:5555" > ~/.firestick_ip)
+    local fs_ip=""
     [[ -f "$HOME/.firestick_ip" ]] && fs_ip=$(cat "$HOME/.firestick_ip" | tr -d '[:space:]')
 
-    local vivo_ip="192.168.1.7:5555"
+    local vivo_ip=""
     [[ -f "$HOME/.vivo_ip" ]] && vivo_ip=$(cat "$HOME/.vivo_ip" | tr -d '[:space:]')
 
     adb connect "$fs_ip" >/dev/null 2>&1
