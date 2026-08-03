@@ -39,6 +39,8 @@ async def delegate_task(role: str, task: str, tier: str = "worker") -> str:
     cmd = f"omniroute launch -- --model {combo} --permission-mode auto -p {safe_prompt} < /dev/null"
     
     env = os.environ.copy()
+    env['CLAUDE_OAUTH_TOKEN_STORE'] = 'file'
+    env['AGY_CREDENTIAL_STORE'] = 'plaintext'
     if 'CLAUDE_CODE_MAX_OUTPUT_TOKENS' in env:
         del env['CLAUDE_CODE_MAX_OUTPUT_TOKENS']
         
