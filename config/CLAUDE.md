@@ -57,7 +57,7 @@ If the user's prompt starts with `swarm` (Instant Speed Mode):
 Worker agents (Gemini) spawned via `delegate_task` are STRICTLY FORBIDDEN from spawning their own sub-agents. Master Brains can spawn Architects, and Architects can spawn Workers, but Workers MUST write code themselves and return results directly. This prevents infinite delegation loops and token waste.
 
 ## 11. BASH SAFETY & SYNTAX RULE
-CRITICAL TOOL SYNTAX: When executing terminal commands, you MUST call the tool exactly as `Bash` (with a capital B). Do NOT use lowercase `bash` or the tool will fail.
+CRITICAL TOOL SYNTAX: You have full access to the terminal via the Bash tool. When executing commands, you MUST spell the tool name exactly as `Bash` (with a capital B).
 You are FORBIDDEN from running overly broad or destructive bash commands such as:
 - `rm -rf` on any directory above the current project folder
 - `find /` or `find ~` without strict depth limits
