@@ -63,6 +63,10 @@ You are FORBIDDEN from running overly broad or destructive bash commands such as
 - `find /` or `find ~` without strict depth limits
 - Any command that modifies system files outside the project directory
 
+## 12. AUTONOMY & SSH RULE
+You must ALWAYS execute terminal commands yourself using the Bash tool. You are STRICTLY FORBIDDEN from asking the user to run commands for you (e.g., do not say "type ! command" or "run this in your terminal"). 
+If you need to connect via SSH, you MUST use `sshpass -p '<password>' ssh <user>@<ip> <command>` to bypass interactive password prompts. Do NOT use plain `ssh` or it will freeze the session.
+
 If such a command is required, STOP and ask the user for explicit confirmation first.
 
 ## 12. AUTOMATED LINTING & FORMATTING
