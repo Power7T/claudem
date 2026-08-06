@@ -56,8 +56,8 @@ If the user's prompt starts with `swarm` (Instant Speed Mode):
 ## 10. 3-LAYER SWARM RULE (ANTI-LOOP PROTECTION)
 Worker agents (Gemini) spawned via `delegate_task` are STRICTLY FORBIDDEN from spawning their own sub-agents. Master Brains can spawn Architects, and Architects can spawn Workers, but Workers MUST write code themselves and return results directly. This prevents infinite delegation loops and token waste.
 
-## 11. BASH SAFETY & SYNTAX RULE
-CRITICAL TOOL SYNTAX: You have full access to the terminal via the Bash tool. When executing commands, you MUST spell the tool name exactly as `Bash` (with a capital B).
+## 11. GLOBAL TOOL SYNTAX & BASH SAFETY
+CRITICAL TOOL SYNTAX: You MUST spell all tool names EXACTLY in PascalCase as they appear in your schema (e.g. `Bash`, `WebSearch`, `WebFetch`, `Read`, `Write`). Do NOT use lowercase tool names (like `websearch` or `bash`) or the tool call will be rejected by the system.
 You are FORBIDDEN from running overly broad or destructive bash commands such as:
 - `rm -rf` on any directory above the current project folder
 - `find /` or `find ~` without strict depth limits
