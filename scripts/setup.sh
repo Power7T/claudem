@@ -28,9 +28,10 @@ echo "✅ Python $(python3 --version)"
 # --- Install Claude Code ---
 echo ""
 echo "→ Installing Claude Code CLI..."
-if command -v claude &> /dev/null; then
+if claude --version &> /dev/null; then
   echo "✅ Claude Code already installed"
 else
+  rm -rf /opt/homebrew/lib/node_modules/@anthropic-ai/.claude-code-* 2>/dev/null || true
   npm install -g @anthropic-ai/claude-code
   echo "✅ Claude Code installed"
 fi
@@ -38,7 +39,7 @@ fi
 # --- Install OmniRoute ---
 echo ""
 echo "→ Installing OmniRoute..."
-if command -v omniroute &> /dev/null; then
+if omniroute --version &> /dev/null; then
   echo "✅ OmniRoute already installed"
 else
   npm install -g omniroute
