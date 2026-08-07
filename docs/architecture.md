@@ -41,7 +41,7 @@ Claude Code Profiles  ←  ~/.claude/profiles/<name>/
     │   Numbered slots (1-5): __route__ token patching for combo selection
     ▼
 CLAUDE.md  ←  ~/.claude/CLAUDE.md
-    │   14 mandatory SDE rules — loaded FIRST, every session, 100% reliable
+    │   15 mandatory SDE rules — loaded FIRST, every session, 100% reliable
     ▼
 MCP Servers
     ├── Swarm MCP (~/.omniroute/swarm_mcp.py)
@@ -85,7 +85,7 @@ This prevents a stale value from a previous session leaking into the next one.
 
 ## Layer 3: CLAUDE.md — The Permanent Brain
 
-`~/.claude/CLAUDE.md` is read **first, every single session**, before any user prompt. It is the guaranteed injection point for the 14 mandatory SDE rules.
+`~/.claude/CLAUDE.md` is read **first, every single session**, before any user prompt. It is the guaranteed injection point for the 15 mandatory SDE rules.
 
 **Why CLAUDE.md over customInstructions?**
 
@@ -243,7 +243,7 @@ Three layers of safety prevent the agent from doing irreversible damage:
 | Profile isolation | Shared history | Per-session isolated profiles |
 | Token compression | None | LLMLingua-2 (30-90% savings) |
 | Multi-agent | None | Swarm MCP (parallel sub-agents) |
-| SDE guardrails | None | 14 mandatory rules via CLAUDE.md |
+| SDE guardrails | None | 15 mandatory rules via CLAUDE.md |
 | AGY model access | N/A | 11 accounts, round-robin |
 
 ---

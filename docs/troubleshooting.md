@@ -44,7 +44,7 @@ pip3 install llmlingua mcp
 # At the start of a claudem session, type:
 what are your operating rules?
 ```
-It should list all 14 rules. If it doesn't:
+It should list all 15 rules. If it doesn't:
 ```bash
 # Verify CLAUDE.md is correct
 cat ~/.claude/CLAUDE.md

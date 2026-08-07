@@ -29,7 +29,7 @@ claudem alias  ─────────────────────�
     │                                                                        │
     ▼                                                                        ▼
 ~/.claude/CLAUDE.md          ~/.claude/settings.json
-(14 mandatory SDE rules)     (MCP servers, model config, timeouts)
+(15 mandatory SDE rules)     (MCP servers, model config, timeouts)
     │
     ▼
 OmniRoute Proxy  (Zero-downtime task-aware routing)
@@ -50,24 +50,25 @@ OmniRoute Proxy  (Zero-downtime task-aware routing)
 
 ---
 
-## The 14 Mandatory SDE Rules (CLAUDE.md)
+## The 15 Mandatory SDE Rules (CLAUDE.md)
 
 Every session, `claudem` loads these rules from `~/.claude/CLAUDE.md`:
 
-1. **SWARM ORCHESTRATION** — Delegates disconnected tasks to parallel agents
-2. **SKELETON MAPPING** — Grep file structure before reading entire files
-3. **DYNAMIC PRE-COMPRESSION** — LLMLingua-2 compresses files >150 lines (0.3 ratio for code, 0.1 for logs)
-4. **CONTEXT AMNESIA** — Auto git commit + state.md reset after 50k tokens
-5. **SELF-HEALING LOOP** — Forbidden from saying "done" without running the code first
-6. **ATOMIC MICRO-COMMITS** — `git commit` after every single individual task
-7. **STATE LOG** — Maintains `state.md` with architectural decisions
-8. **VISUAL REGRESSION QA** — Puppeteer screenshot + AI vision check on UI changes
-9. **SONNETD TRIGGER** — `sonnetd:` prefix forces 3-Layer Brain+Architect+Worker Swarm mode
-10. **3-LAYER SWARM RULE** — Master → Architects → Workers (Workers cannot spawn agents)
-11. **BASH SAFETY RULE** — Forbidden from running `rm -rf`, `find /` without user approval
-12. **AUTONOMY & SSH RULE** — Always execute terminal commands directly via Bash (using `sshpass` for SSH)
-13. **AUTOMATED LINTING** — Agent automatically runs and fixes `eslint`/`ruff` errors before finishing
-14. **SECURITY SCANNING** — Fast dependency checks (`npm audit`/`bandit`) before production milestones
+1. **GLOBAL TOOL SYNTAX** — Strict PascalCase tool names (`Bash`, `Read`, `Write`, `Edit`, `Grep`, `Glob`)
+2. **SWARM ORCHESTRATION** — Delegates disconnected tasks to parallel agents
+3. **SKELETON MAPPING** — Grep file structure before reading entire files
+4. **DYNAMIC PRE-COMPRESSION** — LLMLingua-2 compresses files >150 lines (0.3 ratio for code, 0.1 for logs)
+5. **CONTEXT AMNESIA** — Auto git commit + state.md reset after 50k tokens
+6. **SELF-HEALING LOOP** — Forbidden from saying "done" without running the code first
+7. **ATOMIC MICRO-COMMITS** — `git commit` after every single individual task
+8. **STATE LOG** — Maintains `state.md` with architectural decisions
+9. **VISUAL REGRESSION QA** — Puppeteer screenshot + AI vision check on UI changes
+10. **SONNETD TRIGGER** — `sonnetd:` prefix forces 3-Layer Brain+Architect+Worker Swarm mode
+11. **3-LAYER SWARM RULE** — Master → Architects → Workers (Workers cannot spawn agents)
+12. **BASH SAFETY RULE** — Forbidden from running `rm -rf`, `find /` without user approval
+13. **AUTONOMY & SSH RULE** — Always execute terminal commands directly via Bash (using `sshpass` for SSH)
+14. **AUTOMATED LINTING** — Agent automatically runs and fixes `eslint`/`ruff` errors before finishing
+15. **SECURITY SCANNING** — Fast dependency checks (`npm audit`/`bandit`) before production milestones
 
 ---
 
@@ -198,7 +199,7 @@ claudem/
 ├── README.md               ← This file
 ├── config/
 │   ├── settings.json       ← Claude Code settings (MCP, timeouts, model config)
-│   └── CLAUDE.md           ← The 14 mandatory SDE rules (loaded every session)
+│   └── CLAUDE.md           ← The 15 mandatory SDE rules (loaded every session)
 ├── scripts/
 │   ├── setup.sh            ← One-command setup script
 │   └── health_check.sh     ← Verify all components are working
