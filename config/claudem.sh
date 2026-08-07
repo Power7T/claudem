@@ -419,7 +419,7 @@ claudem() {
         if [[ "$matched" == combo/* ]]; then
           profile_name="${matched#combo/}"
           export ANTHROPIC_HEADER_X_ROUTE_MODEL="$matched"
-          extra_args=("--model" "claude-3-5-sonnet-20241022" "${extra_args[@]}")
+          extra_args=("--model" "agy/claude-sonnet-4-6" "${extra_args[@]}")
         elif [[ "$matched" == *"/"* ]]; then
           profile_name=$(echo "$matched" | tr '/' '-' | tr '_' '-' | tr '.' '-')
         else
@@ -493,7 +493,7 @@ claudem() {
     if [[ "$selected_id" == combo/* ]]; then
       profile_name="${selected_id#combo/}"
       export ANTHROPIC_HEADER_X_ROUTE_MODEL="$selected_id"
-      extra_args=("--model" "claude-3-5-sonnet-20241022" "${extra_args[@]}")
+      extra_args=("--model" "agy/claude-sonnet-4-6" "${extra_args[@]}")
     elif [[ "$selected_id" == *"/"* ]]; then
       profile_name=$(echo "$selected_id" | tr '/' '-' | tr '_' '-' | tr '.' '-')
     else
@@ -518,7 +518,7 @@ claudem() {
     fi
     if [[ "$selected_model" == combo/* ]]; then
       export ANTHROPIC_HEADER_X_ROUTE_MODEL="$selected_model"
-      extra_args=("--model" "claude-3-5-sonnet-20241022" "${extra_args[@]}")
+      extra_args=("--model" "agy/claude-sonnet-4-6" "${extra_args[@]}")
     else
       unset ANTHROPIC_HEADER_X_ROUTE_MODEL
       extra_args=("--model" "$selected_model" "${extra_args[@]}")
