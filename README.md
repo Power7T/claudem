@@ -29,7 +29,7 @@ claudem alias  ─────────────────────�
     │                                                                        │
     ▼                                                                        ▼
 ~/.claude/CLAUDE.md          ~/.claude/settings.json
-(13 mandatory SDE rules)     (MCP servers, model config, timeouts)
+(14 mandatory SDE rules)     (MCP servers, model config, timeouts)
     │
     ▼
 OmniRoute Proxy  (Zero-downtime task-aware routing)
@@ -50,7 +50,7 @@ OmniRoute Proxy  (Zero-downtime task-aware routing)
 
 ---
 
-## The 13 Mandatory SDE Rules (CLAUDE.md)
+## The 14 Mandatory SDE Rules (CLAUDE.md)
 
 Every session, `claudem` loads these rules from `~/.claude/CLAUDE.md`:
 
@@ -65,8 +65,9 @@ Every session, `claudem` loads these rules from `~/.claude/CLAUDE.md`:
 9. **SONNETD TRIGGER** — `sonnetd:` prefix forces 3-Layer Brain+Architect+Worker Swarm mode
 10. **3-LAYER SWARM RULE** — Master → Architects → Workers (Workers cannot spawn agents)
 11. **BASH SAFETY RULE** — Forbidden from running `rm -rf`, `find /` without user approval
-12. **AUTOMATED LINTING** — Agent automatically runs and fixes `eslint`/`ruff` errors before finishing
-13. **SECURITY SCANNING** — Fast dependency checks (`npm audit`/`bandit`) before production milestones
+12. **AUTONOMY & SSH RULE** — Always execute terminal commands directly via Bash (using `sshpass` for SSH)
+13. **AUTOMATED LINTING** — Agent automatically runs and fixes `eslint`/`ruff` errors before finishing
+14. **SECURITY SCANNING** — Fast dependency checks (`npm audit`/`bandit`) before production milestones
 
 ---
 
@@ -197,7 +198,7 @@ claudem/
 ├── README.md               ← This file
 ├── config/
 │   ├── settings.json       ← Claude Code settings (MCP, timeouts, model config)
-│   └── CLAUDE.md           ← The 11 mandatory SDE rules (loaded every session)
+│   └── CLAUDE.md           ← The 14 mandatory SDE rules (loaded every session)
 ├── scripts/
 │   ├── setup.sh            ← One-command setup script
 │   └── health_check.sh     ← Verify all components are working

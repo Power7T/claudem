@@ -501,10 +501,7 @@ claudem() {
     fi
   fi
 
-  # ── Dynamic numbered profile (1-5): prompt for model then patch token ────────
-  # These profiles have isolated API memory (their own token stored in settings.json).
-  # When a combo/* is selected, the token is temporarily patched with a __route__
-  # suffix so OmniRoute knows which combo to use for this profile's session.
+  # ── Dynamic numbered profile (1-5): prompt for model selection ────────
   if [[ "$profile_name" =~ ^[0-9]+$ ]]; then
     local profile_dir="$HOME/.claude/profiles/$profile_name"
     if [[ ! -d "$profile_dir" ]]; then
@@ -527,85 +524,19 @@ claudem() {
       extra_args=("--model" "$selected_model" "${extra_args[@]}")
     fi
     echo "  🎯 Target model selected: $selected_model"
-
-    # Read base token from profile settings (strip any previous __route__ suffix)
-    local settings_file="$profile_dir/settings.json"
-    local base_token=""
-    if [[ -f "$settings_file" ]]; then
-      base_token=$(python3 -c "
-import json
-try:
-    d = json.load(open('$settings_file'))
-    t = d.get('env', {}).get('ANTHROPIC_AUTH_TOKEN', '')
-    if '__route__' in t:
-        t = t.split('__route__')[0]
-    print(t)
-except:
-    pass
-" 2>/dev/null)
-    fi
-
-    # Temporarily patch token with __route__ suffix so OmniRoute routes to the right combo
-    if [[ -n "$ANTHROPIC_HEADER_X_ROUTE_MODEL" && -n "$base_token" && -f "$settings_file" ]]; then
-      local new_token="${base_token}__route__${ANTHROPIC_HEADER_X_ROUTE_MODEL}"
-      python3 -c "
-import json
-d = json.load(open('$settings_file'))
-if 'env' not in d: d['env'] = {}
-d['env']['ANTHROPIC_AUTH_TOKEN'] = '$new_token'
-json.dump(d, open('$settings_file', 'w'), indent=2)
-" 2>/dev/null
-    fi
-
-    echo "  🚀 Launching Claude Code (Isolated API Memory) → profile: $profile_name"
-    omniroute launch --profile "$profile_name" -- --permission-mode auto "${extra_args[@]}"
-
-    # Restore original token after session ends
-    if [[ -n "$ANTHROPIC_HEADER_X_ROUTE_MODEL" && -n "$base_token" && -f "$settings_file" ]]; then
-      python3 -c "
-import json
-d = json.load(open('$settings_file'))
-if 'env' not in d: d['env'] = {}
-d['env']['ANTHROPIC_AUTH_TOKEN'] = '$base_token'
-json.dump(d, open('$settings_file', 'w'), indent=2)
-" 2>/dev/null
-    fi
-  else
-    echo "  🚀 Launching Claude Code → profile: $profile_name"
-    omniroute launch --profile "$profile_name" -- --permission-mode auto "${extra_args[@]}"
   fi
+
+  # Build launch options for omniroute launch (before -- delimiter)
+  local -a launch_opts=("--profile" "$profile_name")
+  if [[ -n "$ANTHROPIC_HEADER_X_ROUTE_MODEL" ]]; then
+    local omni_token=""
+    if [[ -f "$HOME/.omniroute/.env" ]]; then
+      omni_token=$(grep '^OMNIROUTE_API_KEY=' "$HOME/.omniroute/.env" | cut -d '=' -f2 | tr -d '"''')
+    fi
+    [[ -z "$omni_token" ]] && omni_token="omniroute-no-auth"
+    launch_opts+=("--token" "${omni_token}__route__${ANTHROPIC_HEADER_X_ROUTE_MODEL}")
+  fi
+
+  echo "  🚀 Launching Claude Code → profile: $profile_name"
+  omniroute launch "${launch_opts[@]}" -- --permission-mode auto "${extra_args[@]}"
 }
-
-# ── setup-claude ───────────────────────────────────────────────────────────────
-# Bootstraps / re-syncs all Claude Code profiles via OmniRoute.
-setup-claude() {
-  node "$HOME/.omniroute/setup-claude-clean.js"
-}
-
-# ── ADB Auto-Connect Keep-Alive ──────────────────────────────────────────────
-# Automatically attempts to connect to your Firestick and Vivo Phone in the
-# background when a shell starts, keeping the connections alive and preventing
-# Android key authorization timeout.
-_agym_adb_connect_background() {
-  (
-    # Read device IPs from ~/.firestick_ip and ~/.vivo_ip
-    # Create those files with the device's IP:port (e.g. echo "192.168.1.x:5555" > ~/.firestick_ip)
-    local fs_ip=""
-    [[ -f "$HOME/.firestick_ip" ]] && fs_ip=$(cat "$HOME/.firestick_ip" | tr -d '[:space:]')
-
-    local vivo_ip=""
-    [[ -f "$HOME/.vivo_ip" ]] && vivo_ip=$(cat "$HOME/.vivo_ip" | tr -d '[:space:]')
-
-    adb connect "$fs_ip" >/dev/null 2>&1
-    adb connect "$vivo_ip" >/dev/null 2>&1
-  ) &!
-}
-# Run on shell startup
-_agym_adb_connect_background
-
-# ── Aliases & env ──────────────────────────────────────────────────────────────
-alias cm=claudem
-alias llmlingua-sync="$HOME/.llmlingua-mcp/apply-llmlingua.sh"
-
-# Fix for Claude's response exceeding output token limit (infinite loops / large generation)
-export CLAUDE_CODE_MAX_OUTPUT_TOKENS=100000

@@ -28,14 +28,22 @@ echo "✅ Python $(python3 --version)"
 # --- Install Claude Code ---
 echo ""
 echo "→ Installing Claude Code CLI..."
-npm install -g @anthropic-ai/claude-code
-echo "✅ Claude Code installed"
+if command -v claude &> /dev/null; then
+  echo "✅ Claude Code already installed"
+else
+  npm install -g @anthropic-ai/claude-code
+  echo "✅ Claude Code installed"
+fi
 
 # --- Install OmniRoute ---
 echo ""
 echo "→ Installing OmniRoute..."
-npm install -g omniroute
-echo "✅ OmniRoute installed"
+if command -v omniroute &> /dev/null; then
+  echo "✅ OmniRoute already installed"
+else
+  npm install -g omniroute
+  echo "✅ OmniRoute installed"
+fi
 
 # --- Install LLMLingua-2 ---
 echo ""
@@ -65,14 +73,30 @@ echo "✅ CLAUDE.md rules applied"
 echo ""
 echo "→ Installing claudem shell functions to ~/.zshrc..."
 
-if ! grep -q "claudem()" "$HOME/.zshrc" 2>/dev/null; then
-  echo "" >> "$HOME/.zshrc"
-  echo "# ── claudem + agym (OmniRoute Claude Code selector) ─────────────────────────" >> "$HOME/.zshrc"
-  cat "$(dirname "$0")/../config/claudem.sh" >> "$HOME/.zshrc"
-  echo "✅ claudem functions installed to ~/.zshrc"
-else
-  echo "ℹ️  claudem function already exists in ~/.zshrc — skipping (update manually if needed)"
+# Remove existing claudem block from ~/.zshrc if present and replace with fresh config
+if [ -f "$HOME/.zshrc" ]; then
+  python3 -c "
+import os
+path = os.path.expanduser('~/.zshrc')
+with open(path, 'r') as f:
+    c = f.read()
+start = '# ── claudem + agym'
+end = '# ── setup-claude override'
+idx1 = c.find(start)
+idx2 = c.find(end)
+if idx1 != -1 and idx2 != -1:
+    c = c[:idx1] + c[idx2:]
+elif idx1 != -1:
+    c = c[:idx1]
+with open(path, 'w') as f:
+    f.write(c.strip() + '\n')
+" 2>/dev/null || true
 fi
+
+echo "" >> "$HOME/.zshrc"
+echo "# ── claudem + agym (OmniRoute Claude Code selector) ─────────────────────────" >> "$HOME/.zshrc"
+cat "$(dirname "$0")/../config/claudem.sh" >> "$HOME/.zshrc"
+echo "✅ claudem functions updated in ~/.zshrc" 
 
 # --- Copy swarm_mcp.py to OmniRoute data dir ---
 echo ""
