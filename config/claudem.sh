@@ -134,7 +134,7 @@ _agym_build_table() {
   python3 -c "
 import json, sys
 data        = json.loads(sys.argv[1])
-agy_lines   = sys.argv[2].split('|||') if sys.argv[2] else []
+agy_lines   = [l.replace('"', '').replace("'", '') for l in (sys.argv[2].split('|||') if sys.argv[2] else [])]
 has_google  = sys.argv[3] == '1'
 rest_allow  = set(sys.argv[4].split(',')) if sys.argv[4] else set()
 # combo excluded — agym shows only agy + explicitly configured API providers
@@ -190,6 +190,8 @@ print('\n'.join(rows))
 
   # Inject coding combos as a separate section at the bottom
   for combo_line in "${_CODING_COMBOS[@]}"; do
+    combo_line="${combo_line//\"/}"
+    combo_line="${combo_line//\'/}"
     echo "${combo_line}|coding-combos"
   done
 }
@@ -531,7 +533,6 @@ claudem() {
   if [[ -n "$ANTHROPIC_HEADER_X_ROUTE_MODEL" ]]; then
     local omni_token=""
     if [[ -f "$HOME/.omniroute/.env" ]]; then
-      omni_token=$(grep '^OMNIROUTE_API_KEY=' "$HOME/.omniroute/.env" | cut -d '=' -f2 | tr -d '"''')
     fi
     [[ -z "$omni_token" ]] && omni_token="omniroute-no-auth"
     launch_opts+=("--token" "${omni_token}__route__${ANTHROPIC_HEADER_X_ROUTE_MODEL}")
