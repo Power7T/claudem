@@ -48,8 +48,12 @@ fi
 # --- Install LLMLingua-2 ---
 echo ""
 echo "→ Installing LLMLingua-2 Python package..."
-pip3 install llmlingua --quiet
-echo "✅ LLMLingua-2 installed"
+if python3 -c "import llmlingua" &> /dev/null; then
+  echo "✅ LLMLingua-2 already installed"
+else
+  pip3 install llmlingua --break-system-packages --quiet 2>/dev/null || pip3 install llmlingua --quiet || true
+  echo "✅ LLMLingua-2 installed"
+fi
 
 # --- Apply Configuration ---
 echo ""
