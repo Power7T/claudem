@@ -103,12 +103,18 @@ echo "# ── claudem + agym (OmniRoute Claude Code selector) ─────�
 cat "$(dirname "$0")/../config/claudem.sh" >> "$HOME/.zshrc"
 echo "✅ claudem functions updated in ~/.zshrc" 
 
-# --- Copy swarm_mcp.py to OmniRoute data dir ---
+# --- Copy swarm_mcp.py & setup-claude-clean.js to OmniRoute data dir ---
 echo ""
-echo "→ Installing Swarm MCP server..."
+echo "→ Installing Swarm MCP server & sync helper..."
 mkdir -p "$HOME/.omniroute"
 cp "$(dirname "$0")/swarm_mcp.py" "$HOME/.omniroute/swarm_mcp.py"
-echo "✅ swarm_mcp.py installed to ~/.omniroute/"
+cp "$(dirname "$0")/setup-claude-clean.js" "$HOME/.omniroute/setup-claude-clean.js"
+echo "✅ swarm_mcp.py & setup-claude-clean.js installed to ~/.omniroute/"
+
+echo ""
+echo "→ Bootstrapping & syncing all Claude Code profiles..."
+node "$HOME/.omniroute/setup-claude-clean.js" || true
+echo "✅ Profile sync complete" 
 
 # --- Done ---
 echo ""
