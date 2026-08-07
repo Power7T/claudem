@@ -106,46 +106,41 @@ _PROVIDER_TO_OWNED_BY=(
 _agym_build_table() {
   local url="${OMNIROUTE_URL:-http://localhost:20128}"
 
-  # Get currently configured provider IDs from omniroute
+  local rest_owned_by=()
   local configured_providers
   configured_providers=$(omniroute providers list 2>/dev/null \
     | sed 's/\x1b\[[0-9;]*m//g' \
     | grep -E '^[a-f0-9]+' \
     | awk '{print $2}')
 
-  if [[ -z "$configured_providers" ]]; then
-    echo "⚠️  No providers configured in OmniRoute." >&2
-    echo "   Add one: omniroute providers add google" >&2
-    return 1
+  if [[ -n "$configured_providers" ]]; then
+    while IFS= read -r pid; do
+      [[ -z "$pid" ]] && continue
+      [[ -n "${_PROVIDER_TO_OWNED_BY[$pid]}" ]] && rest_owned_by+=("${_PROVIDER_TO_OWNED_BY[$pid]}")
+    done <<< "$configured_providers"
   fi
-
-  local has_google=0
-  local rest_owned_by=()
-  while IFS= read -r pid; do
-    [[ -z "$pid" ]] && continue
-    [[ "$pid" == 'google' || "$pid" == 'antigravity' ]] && has_google=1
-    [[ -n "${_PROVIDER_TO_OWNED_BY[$pid]}" ]] && rest_owned_by+=("${_PROVIDER_TO_OWNED_BY[$pid]}")
-  done <<< "$configured_providers"
 
   local raw_json
   raw_json=$(curl -s --connect-timeout 4 "$url/v1/models" 2>/dev/null)
-  [[ -z "$raw_json" ]] && return 1
+  if [[ -z "$raw_json" ]]; then
+    raw_json='{"data":[]}'
+  fi
 
   python3 -c "
 import json, sys
-data        = json.loads(sys.argv[1])
+try:
+    data = json.loads(sys.argv[1])
+except:
+    data = {'data': []}
 agy_lines   = [l.replace('"', '').replace("'", '') for l in (sys.argv[2].split('|||') if sys.argv[2] else [])]
-has_google  = sys.argv[3] == '1'
 rest_allow  = set(sys.argv[4].split(',')) if sys.argv[4] else set()
-# combo excluded — agym shows only agy + explicitly configured API providers
 
 seen = set()
 rows = []
 
-# 1. Inject agy/ models when google/antigravity provider is configured
-if has_google:
-    for line in agy_lines:
-        if not line.strip(): continue
+# 1. Always inject agy/ models
+for line in agy_lines:
+    if line and line.strip():
         parts = line.split('|')
         if len(parts) < 4: continue
         mid = parts[0]
@@ -153,7 +148,7 @@ if has_google:
         seen.add(mid)
         rows.append(line + '|agy')
 
-# 2. REST models filtered to configured providers + combo
+# 2. REST models
 from collections import defaultdict
 groups = defaultdict(list)
 for m in data.get('data', []):
@@ -161,8 +156,8 @@ for m in data.get('data', []):
     ob  = m.get('owned_by', '')
     if not mid or mid in seen: continue
     if m.get('type') == 'video': continue
-    if ob == 'openrouter': continue  # completely exclude OpenRouter models from agym
-    if ob not in rest_allow: continue
+    if ob == 'openrouter': continue
+    if rest_allow and ob not in rest_allow: continue
     seen.add(mid)
     name = m.get('name') or mid
     ctx  = m.get('context_length') or '?'
@@ -173,12 +168,11 @@ for m in data.get('data', []):
     if ctx != '?': ctx = str(int(ctx)//1000) + 'K'
     groups[ob].append(mid + '|' + name + '|' + str(ctx) + '|' + ','.join(tags) + '|' + ob)
 
-# agy first (already injected), then rest in sorted order
 for ob in sorted(groups.keys()):
     rows.extend(groups[ob])
 
 print('\n'.join(rows))
-" "$raw_json" "${(j:|||:)_AGY_MODELS}" "$has_google" "${(j:,:)rest_owned_by}" 2>/dev/null
+" "$raw_json" "${(j:|||:)_AGY_MODELS}" "1" "${(j:,:)rest_owned_by}" 2>/dev/null
 
   # Inject dynamic numeric profiles at the top of combos
   local d
