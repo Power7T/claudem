@@ -116,6 +116,35 @@ echo "→ Bootstrapping & syncing all Claude Code profiles..."
 node "$HOME/.omniroute/setup-claude-clean.js" || true
 echo "✅ Profile sync complete" 
 
+# --- OmniRoute Proxy Tool Fixer ---
+echo ""
+echo "→ Patching OmniRoute proxy tool name auto-corrector..."
+python3 -c "
+import os
+
+files = [
+  '/opt/homebrew/lib/node_modules/omniroute/dist/src/mitm/handlers/base.ts',
+  '/opt/homebrew/lib/node_modules/omniroute/dist/src/mitm/server.cjs'
+]
+
+for filepath in files:
+  if os.path.exists(filepath):
+    with open(filepath, 'r') as f:
+      c = f.read()
+    if '"name":"Bash"' not in c and '"name": "Bash"' not in c:
+      c = c.replace(
+        'const buf = Buffer.from(value);',
+        'let buf = Buffer.from(value);\n        let str = buf.toString("utf-8");\n        if (str.includes("\"name\"")) {\n          str = str.replace(/"name"\\s*:\\s*"bash"/g, "\"name\":\"Bash\"").replace(/"name"\\s*:\\s*"read"/g, "\"name\":\"Read\"").replace(/"name"\\s*:\s*"write"/g, "\"name\":\"Write\"").replace(/"name"\\s*:\\s*"edit"/g, "\"name\":\"Edit\"").replace(/"name"\\s*:\\s*"grep"/g, "\"name\":\"Grep\"").replace(/"name"\\s*:\\s*"glob"/g, "\"name\":\"Glob\"").replace(/"name"\\s*:\\s*"websearch"/g, "\"name\":\"WebSearch\"").replace(/"name"\\s*:\\s*"webfetch"/g, "\"name\":\"WebFetch\"");\n          buf = Buffer.from(str, "utf-8");\n        }'
+      )
+      c = c.replace(
+        'res.write(text);',
+        'if (text.includes("\"name\"")) { text = text.replace(/"name"\\s*:\\s*"bash"/g, "\"name\":\"Bash\"").replace(/"name"\\s*:\\s*"read"/g, "\"name\":\"Read\"").replace(/"name"\\s*:\\s*"write"/g, "\"name\":\"Write\"").replace(/"name"\\s*:\\s*"edit"/g, "\"name\":\"Edit\""); }\n      res.write(text);'
+      )
+      with open(filepath, 'w') as f:
+        f.write(c)
+      print(f'✅ Patched {filepath}')
+" 2>/dev/null || true
+
 # --- Done ---
 echo ""
 echo "================================"
