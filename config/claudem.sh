@@ -43,17 +43,15 @@ _CODING_COMBOS=(
 
 # ── Provider display names ─────────────────────────────────────────────────────
 # Maps owned_by → friendly label shown in agym header rows
-declare -A _OMNIROUTE_PROVIDER_LABELS
-_OMNIROUTE_PROVIDER_LABELS=(
-  [agy]="agy  ·  Google AI Pro (Gemini + Claude via MITM)"
-  [coding-combos]="⚙️  Coding Combos  · Your smart routing presets"
-  [combo]="auto  ·  Smart Router (picks best available model)"
-  [opencode]="opencode  ·  OpenCode Free Models"
-  [theoldllm]="theoldllm  ·  The Old LLM (GPT-5, Claude, Gemini free)"
-  [duckduckgo-web]="ddgw  ·  DuckDuckGo AI Chat (free, no key)"
-  [mimocode]="mimocode  ·  MiMo Code"
-  [chipotle]="chipotle  ·  Chipotle AI (Pepper)"
-)
+typeset -A _OMNIROUTE_PROVIDER_LABELS 2>/dev/null || declare -A _OMNIROUTE_PROVIDER_LABELS
+_OMNIROUTE_PROVIDER_LABELS[agy]="agy  ·  Google AI Pro (Gemini + Claude via MITM)"
+_OMNIROUTE_PROVIDER_LABELS[coding-combos]="⚙️  Coding Combos  · Your smart routing presets"
+_OMNIROUTE_PROVIDER_LABELS[combo]="auto  ·  Smart Router (picks best available model)"
+_OMNIROUTE_PROVIDER_LABELS[opencode]="opencode  ·  OpenCode Free Models"
+_OMNIROUTE_PROVIDER_LABELS[theoldllm]="theoldllm  ·  The Old LLM (GPT-5, Claude, Gemini free)"
+_OMNIROUTE_PROVIDER_LABELS[duckduckgo-web]="ddgw  ·  DuckDuckGo AI Chat (free, no key)"
+_OMNIROUTE_PROVIDER_LABELS[mimocode]="mimocode  ·  MiMo Code"
+_OMNIROUTE_PROVIDER_LABELS[chipotle]="chipotle  ·  Chipotle AI (Pepper)"
 
 # ── agym-status ────────────────────────────────────────────────────────────────
 agym-status() {
@@ -94,14 +92,12 @@ for ob,n in sorted(groups.items()): print(f'   [{ob}]  {n} models')
 # Note: OmniRoute removed agy/ models from /v1/models (now MITM-only), so they
 # are injected from _AGY_MODELS rather than filtered from REST.
 # 'combo' (auto/ router) is always included when any provider is configured.
-typeset -A _PROVIDER_TO_OWNED_BY
-_PROVIDER_TO_OWNED_BY=(
-  [openai]='openai'
-  [anthropic]='anthropic'
-  [groq]='groq'
-  [mistral]='mistral'
-  [openrouter]='openrouter'
-)
+typeset -A _PROVIDER_TO_OWNED_BY 2>/dev/null || declare -A _PROVIDER_TO_OWNED_BY
+_PROVIDER_TO_OWNED_BY[openai]='openai'
+_PROVIDER_TO_OWNED_BY[anthropic]='anthropic'
+_PROVIDER_TO_OWNED_BY[groq]='groq'
+_PROVIDER_TO_OWNED_BY[mistral]='mistral'
+_PROVIDER_TO_OWNED_BY[openrouter]='openrouter' 
 
 _agym_build_table() {
   local url="${OMNIROUTE_URL:-http://localhost:20128}"
@@ -379,7 +375,7 @@ claudem() {
   model_table=$(_agym_build_table)
   if [[ -z "$model_table" ]]; then
     echo "🔄 OmniRoute is offline. Auto-starting background server..."
-    nohup omniroute serve > "$HOME/.omniroute/server.log" 2>&1 &
+    omniroute serve --daemon >/dev/null 2>&1 || nohup omniroute serve > "$HOME/.omniroute/server.log" 2>&1 &
     sleep 3
     model_table=$(_agym_build_table)
     if [[ -z "$model_table" ]]; then
@@ -455,7 +451,7 @@ claudem() {
       local capstr=""
       [[ "$mcaps" == *"v"* ]] && capstr+="[v] "
       [[ "$mcaps" == *"t"* ]] && capstr+="[t]"
-      all_labels+=("$(printf '%-38s  %-6s  %s' \"$mname\" \"$mctx\" \"$capstr\")")
+      all_labels+=("$(printf '%-38s  %-6s  %s' "$mname" "$mctx" "$capstr")")
     done <<< "$model_table"
 
     echo "  Select a Claude Code profile (Ctrl-C to cancel):"
@@ -530,6 +526,12 @@ claudem() {
     fi
     [[ -z "$omni_token" ]] && omni_token="omniroute-no-auth"
     launch_opts+=("--token" "${omni_token}__route__${ANTHROPIC_HEADER_X_ROUTE_MODEL}")
+  fi
+
+    if ! curl -s --connect-timeout 2 "${url}/v1/models" >/dev/null 2>&1; then
+    echo "🔄 Starting OmniRoute server daemon..."
+    omniroute serve --daemon >/dev/null 2>&1 || true
+    sleep 2
   fi
 
   echo "  🚀 Launching Claude Code → profile: $profile_name"

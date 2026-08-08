@@ -127,46 +127,24 @@ fi
 
 # --- OmniRoute Proxy Tool Fixer ---
 echo ""
-echo "→ Patching OmniRoute proxy tool name auto-corrector..."
-python3 -c "
-import os
+echo "→ Patching OmniRoute proxy for PascalCase tool name compatibility..."
+node "$HOME/.omniroute/patch-omniroute.js" || true
 
-files = [
-  '/opt/homebrew/lib/node_modules/omniroute/dist/src/mitm/handlers/base.ts',
-  '/opt/homebrew/lib/node_modules/omniroute/dist/src/mitm/server.cjs',
-  '/opt/homebrew/lib/node_modules/omniroute/dist/open-sse/mcp-server/server.js'
-]
+# --- Restart & Start OmniRoute Daemon ---
+echo ""
+echo "→ Reloading OmniRoute server background daemon..."
+pkill -f "omniroute" 2>/dev/null || true
+sleep 1
+omniroute serve --daemon >/dev/null 2>&1 || true
+echo "✅ OmniRoute background daemon is active"
 
-for filepath in files:
-  if os.path.exists(filepath):
-    with open(filepath, 'r') as f:
-      c = f.read()
-    if '"name":"Bash"' not in c and '"name": "Bash"' not in c:
-      c = c.replace('controller.enqueue(value);', 'if (value && value.length > 0) { let str = new TextDecoder("utf-8").decode(value); if (str.includes("\"name\"")) { str = str.replace(/"name"\\s*:\\s*"bash"/g, "\"name\":\"Bash\"").replace(/"name"\\s*:\\s*"read"/g, "\"name\":\"Read\"").replace(/"name"\\s*:\\s*"write"/g, "\"name\":\"Write\"").replace(/"name"\\s*:\\s*"edit"/g, "\"name\":\"Edit\"").replace(/"name"\\s*:\\s*"grep"/g, "\"name\":\"Grep\"").replace(/"name"\\s*:\\s*"glob"/g, "\"name\":\"Glob\"").replace(/"name"\\s*:\\s*"websearch"/g, "\"name\":\"WebSearch\"").replace(/"name"\\s*:\\s*"webfetch"/g, "\"name\":\"WebFetch\""); value = new TextEncoder().encode(str); } } controller.enqueue(value);')
-      c = c.replace('controller.enqueue(enc.encode(s));', 'if (typeof s === "string" && s.includes("\"name\"")) { s = s.replace(/"name"\\s*:\\s*"bash"/g, "\"name\":\"Bash\"").replace(/"name"\\s*:\\s*"read"/g, "\"name\":\"Read\"").replace(/"name"\\s*:\\s*"write"/g, "\"name\":\"Write\"").replace(/"name"\\s*:\\s*"edit"/g, "\"name\":\"Edit\""); } controller.enqueue(enc.encode(s));')
-      c = c.replace(
-        'const buf = Buffer.from(value);',
-        'let buf = Buffer.from(value);\n        let str = buf.toString("utf-8");\n        if (str.includes("\"name\"")) {\n          str = str.replace(/"name"\\s*:\\s*"bash"/g, "\"name\":\"Bash\"").replace(/"name"\\s*:\\s*"read"/g, "\"name\":\"Read\"").replace(/"name"\\s*:\s*"write"/g, "\"name\":\"Write\"").replace(/"name"\\s*:\\s*"edit"/g, "\"name\":\"Edit\"").replace(/"name"\\s*:\\s*"grep"/g, "\"name\":\"Grep\"").replace(/"name"\\s*:\\s*"glob"/g, "\"name\":\"Glob\"").replace(/"name"\\s*:\\s*"websearch"/g, "\"name\":\"WebSearch\"").replace(/"name"\\s*:\\s*"webfetch"/g, "\"name\":\"WebFetch\"");\n          buf = Buffer.from(str, "utf-8");\n        }'
-      )
-      c = c.replace(
-        'res.write(text);',
-        'if (text.includes("\"name\"")) { text = text.replace(/"name"\\s*:\\s*"bash"/g, "\"name\":\"Bash\"").replace(/"name"\\s*:\\s*"read"/g, "\"name\":\"Read\"").replace(/"name"\\s*:\\s*"write"/g, "\"name\":\"Write\"").replace(/"name"\\s*:\\s*"edit"/g, "\"name\":\"Edit\""); }\n      res.write(text);'
-      )
-      with open(filepath, 'w') as f:
-        f.write(c)
-      print(f'✅ Patched {filepath}')
-" 2>/dev/null || true
-
-# --- Done ---
 echo ""
 echo "================================"
 echo "✅ claudem setup complete!"
 echo ""
 echo "Next steps:"
-echo "  1. source ~/.zshrc"
-echo "  2. omniroute serve            (start the proxy)"
-echo "  3. omniroute providers add google  (add your AGY/Google AI Pro account)"
-echo "  4. claudem                    (start your first session)"
+echo "1. source ~/.zshrc"
+echo "2. claudem                    (start your session)"
 echo ""
 echo "Tips:"
 echo "  · Prefix any complex prompt with 'sonnetd' to activate Brain+Worker Swarm mode"
