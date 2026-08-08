@@ -290,21 +290,21 @@ _agym_select_model() {
   local model_table="$1"
   local -a all_ids=() all_labels=()
   local last_ob=""
+  local mid mname mctx mcaps mob capstr label formatted
 
   while IFS='|' read -r mid mname mctx mcaps mob; do
     [[ "$mid" == "combo/1" ]] && continue
 
     if [[ "$mob" != "$last_ob" ]]; then
-      local label="${_OMNIROUTE_PROVIDER_LABELS[$mob]:-$mob}"
+      label="${_OMNIROUTE_PROVIDER_LABELS[$mob]:-$mob}"
       all_ids+=("---")
       all_labels+=("── $label")
       last_ob="$mob"
     fi
     all_ids+=("$mid")
-    local capstr=""
+    capstr=""
     [[ "$mcaps" == *"v"* ]] && capstr+="[v] "
     [[ "$mcaps" == *"t"* ]] && capstr+="[t]"
-    local formatted
     formatted=$(printf '%-38s  %-6s  %s' "$mname" "$mctx" "$capstr")
     all_labels+=("$formatted")
   done <<< "$model_table"
@@ -315,11 +315,15 @@ _agym_select_model() {
   local -a selectable_ids=()
   local idx=1
   for id in "${all_ids[@]}"; do
-    local label="${all_labels[$idx]}"
+    label="${all_labels[$idx]}"
     if [[ "$id" == "---" ]]; then
-      printf "\n  %s\n" "$label" >&2
+      printf "
+  %s
+" "$label" >&2
     else
-        printf "    %3d.  %s\n" "$i" "$label"
+      printf "    %3d.  %s
+" "$i" "$label" >&2
+      selectable_ids+=("$id")
       (( i++ ))
     fi
     (( idx++ ))
