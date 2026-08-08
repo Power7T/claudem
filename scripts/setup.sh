@@ -109,6 +109,7 @@ echo "→ Installing Swarm MCP server & sync helper..."
 mkdir -p "$HOME/.omniroute"
 cp "$(dirname "$0")/swarm_mcp.py" "$HOME/.omniroute/swarm_mcp.py"
 cp "$(dirname "$0")/setup-claude-clean.js" "$HOME/.omniroute/setup-claude-clean.js"
+cp "$(dirname "$0")/patch-omniroute.js" "$HOME/.omniroute/patch-omniroute.js"
 echo "✅ swarm_mcp.py & setup-claude-clean.js installed to ~/.omniroute/"
 
 echo ""
