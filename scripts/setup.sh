@@ -124,7 +124,8 @@ import os
 
 files = [
   '/opt/homebrew/lib/node_modules/omniroute/dist/src/mitm/handlers/base.ts',
-  '/opt/homebrew/lib/node_modules/omniroute/dist/src/mitm/server.cjs'
+  '/opt/homebrew/lib/node_modules/omniroute/dist/src/mitm/server.cjs',
+  '/opt/homebrew/lib/node_modules/omniroute/dist/open-sse/mcp-server/server.js'
 ]
 
 for filepath in files:
@@ -132,6 +133,8 @@ for filepath in files:
     with open(filepath, 'r') as f:
       c = f.read()
     if '"name":"Bash"' not in c and '"name": "Bash"' not in c:
+      c = c.replace('controller.enqueue(value);', 'if (value && value.length > 0) { let str = new TextDecoder("utf-8").decode(value); if (str.includes("\"name\"")) { str = str.replace(/"name"\\s*:\\s*"bash"/g, "\"name\":\"Bash\"").replace(/"name"\\s*:\\s*"read"/g, "\"name\":\"Read\"").replace(/"name"\\s*:\\s*"write"/g, "\"name\":\"Write\"").replace(/"name"\\s*:\\s*"edit"/g, "\"name\":\"Edit\"").replace(/"name"\\s*:\\s*"grep"/g, "\"name\":\"Grep\"").replace(/"name"\\s*:\\s*"glob"/g, "\"name\":\"Glob\"").replace(/"name"\\s*:\\s*"websearch"/g, "\"name\":\"WebSearch\"").replace(/"name"\\s*:\\s*"webfetch"/g, "\"name\":\"WebFetch\""); value = new TextEncoder().encode(str); } } controller.enqueue(value);')
+      c = c.replace('controller.enqueue(enc.encode(s));', 'if (typeof s === "string" && s.includes("\"name\"")) { s = s.replace(/"name"\\s*:\\s*"bash"/g, "\"name\":\"Bash\"").replace(/"name"\\s*:\\s*"read"/g, "\"name\":\"Read\"").replace(/"name"\\s*:\\s*"write"/g, "\"name\":\"Write\"").replace(/"name"\\s*:\\s*"edit"/g, "\"name\":\"Edit\""); } controller.enqueue(enc.encode(s));')
       c = c.replace(
         'const buf = Buffer.from(value);',
         'let buf = Buffer.from(value);\n        let str = buf.toString("utf-8");\n        if (str.includes("\"name\"")) {\n          str = str.replace(/"name"\\s*:\\s*"bash"/g, "\"name\":\"Bash\"").replace(/"name"\\s*:\\s*"read"/g, "\"name\":\"Read\"").replace(/"name"\\s*:\s*"write"/g, "\"name\":\"Write\"").replace(/"name"\\s*:\\s*"edit"/g, "\"name\":\"Edit\"").replace(/"name"\\s*:\\s*"grep"/g, "\"name\":\"Grep\"").replace(/"name"\\s*:\\s*"glob"/g, "\"name\":\"Glob\"").replace(/"name"\\s*:\\s*"websearch"/g, "\"name\":\"WebSearch\"").replace(/"name"\\s*:\\s*"webfetch"/g, "\"name\":\"WebFetch\"");\n          buf = Buffer.from(str, "utf-8");\n        }'
