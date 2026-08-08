@@ -25,6 +25,21 @@ fi
 echo "✅ Node.js $(node --version)"
 echo "✅ Python $(python3 --version)"
 
+# --- Install & Configure Claude Desktop App ---
+echo ""
+echo "→ Checking Claude Desktop App..."
+if [ -d "/Applications/Claude.app" ]; then
+  echo "✅ Claude Desktop App already installed at /Applications/Claude.app"
+else
+  echo "→ Installing Claude Desktop App via Homebrew Cask..."
+  brew install --cask claude 2>/dev/null || echo "ℹ️  Install Claude Desktop from https://claude.ai/download"
+fi
+
+echo ""
+echo "→ Syncing Claude Desktop App configuration with OmniRoute..."
+cp "$(dirname "$0")/setup-claude-desktop.js" "$HOME/.omniroute/setup-claude-desktop.js" 2>/dev/null || true
+node "$HOME/.omniroute/setup-claude-desktop.js" 2>/dev/null || true
+
 # --- Install Claude Code ---
 echo ""
 echo "→ Installing Claude Code CLI..."
