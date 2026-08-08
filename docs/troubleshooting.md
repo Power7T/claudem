@@ -121,3 +121,40 @@ Run the full health check to diagnose any issue:
 ```bash
 bash scripts/health_check.sh
 ```
+
+---
+
+## Tool Casing Errors (`Error: No such tool available: bash`)
+
+**Symptom:** Claude Code complains `Error: No such tool available: bash` or `read` / `edit` / `write`.
+
+**Cause:** Anthropic Claude Code CLI strictly expects PascalCase tool names (`Bash`, `Read`, `Edit`, `Write`, `Grep`, `Glob`, `WebSearch`, `WebFetch`), but non-Anthropic models (e.g. Gemini, OpenAI) return lowercase tool calls.
+
+**Fix & Prevention:**
+1. Run `bash scripts/setup.sh` which executes `scripts/patch-omniroute.js` to automatically patch OmniRoute's `claudeCodeToolRemapper` and SSE stream encoders.
+2. Ensure OmniRoute is restarted after any global OmniRoute update (`omniroute serve --daemon`).
+
+---
+
+## Double Quote Display Artifacts in Menu
+
+**Symptom:** The `claudem` model picker menu displays options wrapped in double quotes (e.g. `"⚡ Profile 1..."`).
+
+**Cause:** Unescaped or double-nested quotes in shell `printf` / string array expansions inside `config/claudem.sh`.
+
+**Fix & Prevention:**
+- Keep `printf` format strings clean in `config/claudem.sh`:
+  `all_labels+=("$(printf '%-38s  %-6s  %s' "$mname" "$mctx" "$capstr")")`
+- Run `zsh -n config/claudem.sh` after editing shell configuration to verify syntax.
+
+---
+
+## OmniRoute Background Proxy Offline
+
+**Symptom:** `claudem` displays `OmniRoute is not reachable at http://localhost:20128`.
+
+**Cause:** OmniRoute background proxy service was stopped or killed.
+
+**Fix & Prevention:**
+- Start OmniRoute in daemon mode: `omniroute serve --daemon`.
+- `claudem` will automatically attempt to start `omniroute serve --daemon` if port 20128 is not responding on launch.
