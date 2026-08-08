@@ -114,7 +114,16 @@ echo "✅ swarm_mcp.py & setup-claude-clean.js installed to ~/.omniroute/"
 echo ""
 echo "→ Bootstrapping & syncing all Claude Code profiles..."
 node "$HOME/.omniroute/setup-claude-clean.js" || true
-echo "✅ Profile sync complete" 
+echo "✅ Profile sync complete"
+
+# Restart any running OmniRoute server process so Node reloads patched JS code into RAM
+if pgrep -f "omniroute" &>/dev/null; then
+  echo ""
+  echo "→ Restarting running OmniRoute server to load patched proxy code into RAM..."
+  pkill -f "omniroute" 2>/dev/null || true
+  sleep 1
+  echo "✅ Stale OmniRoute background process restarted"
+fi 
 
 # --- OmniRoute Proxy Tool Fixer ---
 echo ""
