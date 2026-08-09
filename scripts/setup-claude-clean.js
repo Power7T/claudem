@@ -234,3 +234,20 @@ main().catch(err => {
   console.error("Fatal error:", err);
   process.exit(1);
 });
+
+
+// Strip stale oauthAccount from ~/.claude.json to avoid "Both ANTHROPIC_AUTH_TOKEN and /login managed key set" warning
+const globalClaudeJson = join(os.homedir(), ".claude.json");
+if (existsSync(globalClaudeJson)) {
+  try {
+    const raw = readFileSync(globalClaudeJson, "utf8");
+    const parsed = JSON.parse(raw);
+    if (parsed.oauthAccount || parsed.sessionKey) {
+      delete parsed.oauthAccount;
+      delete parsed.sessionKey;
+      writeFileSync(globalClaudeJson, JSON.stringify(parsed, null, 2), "utf8");
+    }
+  } catch (e) {
+    // ignore
+  }
+}
