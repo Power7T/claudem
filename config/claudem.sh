@@ -133,8 +133,8 @@ if isinstance(data, dict):
         mid = m.get("id", "")
         ob  = m.get("owned_by", "")
         if not mid or mid in seen: continue
-        if m.get("type") == "video": continue
-        if ob == "openrouter": continue
+        # Ignore raw provider entries (antigravity/*, openrouter/*), keep only extra custom combos
+        if ob != "combo" and not mid.startswith("combo/"): continue
         seen.add(mid)
         name = m.get("name") or mid
         ctx  = m.get("context_length") or "?"
@@ -147,7 +147,7 @@ if isinstance(data, dict):
                 ctx = str(int(ctx)//1000) + "K"
             except Exception:
                 pass
-        groups[ob].append(mid + "|" + name + "|" + str(ctx) + "|" + ",".join(tags) + "|" + ob)
+        groups["coding-combos"].append(mid + "|" + name + "|" + str(ctx) + "|" + ",".join(tags) + "|coding-combos")
 
 for ob in sorted(groups.keys()):
     rows.extend(groups[ob])
