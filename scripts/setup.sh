@@ -99,9 +99,9 @@ if [ -f "$HOME/.zshrc" ]; then
 fi
 echo "✅ Cleaned ~/.zshrc (reduced from 190MB/6.8M lines to 500 lines) and installed claudem"
 
-# --- Seed Sonnet Boss & Codex Architect Combos into OmniRoute Database ---
+# --- Seed Sonnet Boss & Codex Architect Combos into OmniRoute Database (Purge Opus) ---
 echo ""
-echo "→ Registering Sonnet Boss & Codex Architect combos into OmniRoute..."
+echo "→ Registering Sonnet Boss & Codex Architect combos (Opus purged) into OmniRoute..."
 python3 -c "
 import sqlite3, json, uuid, datetime, os
 
@@ -163,9 +163,25 @@ if os.path.exists(db_path):
             ]
             cursor.execute('UPDATE combos SET data=? WHERE name=\"codex-architect\"', (json.dumps(ca_data),))
 
+        # Purge Opus from all combos in storage
+        cursor.execute('SELECT id, name, data FROM combos')
+        rows = cursor.fetchall()
+        for cid, cname, craw in rows:
+            try:
+                cdata = json.loads(craw)
+                models = cdata.get('models', [])
+                filtered = [m for m in models if 'opus' not in (m.get('model','') if isinstance(m, dict) else str(m)).lower()]
+                if len(filtered) != len(models):
+                    if not filtered:
+                        filtered = [{'provider': 'agy', 'model': 'agy/claude-sonnet-4-6'}]
+                    cdata['models'] = filtered
+                    cursor.execute('UPDATE combos SET data=? WHERE id=?', (json.dumps(cdata), cid))
+            except Exception:
+                pass
+
         conn.commit()
         conn.close()
-        print('✅ sonnet-boss & codex-architect combos registered successfully in OmniRoute storage')
+        print('✅ Opus purged from all combos and sonnet-boss registered successfully')
     except Exception as e:
         print('ℹ️  Combo seed note:', e)
 " || true

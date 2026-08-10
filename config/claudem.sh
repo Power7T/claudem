@@ -18,7 +18,6 @@ _AGY_MODELS=(
   "agy/gemini-2.5-flash|Gemini 2.5 Flash|1048K|v"
   "agy/gemini-2.5-flash-thinking|Gemini 2.5 Flash Thinking|1048K|v,t"
   "agy/gemini-2.5-flash-lite|Gemini 2.5 Flash Lite|1048K|v"
-  "agy/claude-opus-4-6-thinking|Claude Opus 4.6 (Thinking)|200K|v,t"
   "agy/claude-sonnet-4-6|Claude Sonnet 4.6 (Thinking)|200K|v,t"
 )
 
@@ -33,8 +32,6 @@ _CODING_COMBOS=(
   "combo/test-forge|🧪 Test Forge    · priority Sonnet for test writing|1048K|t"
   "combo/agentic-coder|🤖 Agentic Coder · reset-aware for long agent runs|1048K|t"
   "combo/web-builder|🌐 Web Builder   · Stitch MCP + vision models for UI/CSS/React|1048K|v,t"
-  "combo/master-reasoner|🧠 Master Reasoner · priority Opus-thinking for logic & architecture|1048K|t"
-  "combo/pure-thinking|🧠 Pure Thinking  · pure Opus-thinking with no fallbacks|200K|t"
   "combo/sonnet-boss|👑 Sonnet Boss    · Sonnet-first priority with Gemini failover|200K|v,t"
   "combo/gemini-coder|🤖 Gemini Coder    · dedicated Gemini models for coding|1048K|t"
 )
