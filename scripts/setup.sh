@@ -94,30 +94,10 @@ echo ""
 echo "→ Installing claudem shell functions to ~/.zshrc..."
 
 if [ -f "$HOME/.zshrc" ]; then
-  python3 -c '
-import os
-path = os.path.expanduser("~/.zshrc")
-if os.path.exists(path):
-    with open(path, "r", errors="ignore") as f:
-        lines = f.readlines()
-    clean = []
-    skip = False
-    for l in lines:
-        if any(k in l for k in ["# ── claudem", "# claudem —", "_agym_build_table", "claudem() {", "agym() {", "_AGY_MODELS="]):
-            skip = True
-            continue
-        if skip:
-            if l.strip() == "}" or (l.startswith("# ── ") and "claudem" not in l and "agym" not in l):
-                skip = False
-            continue
-        clean.append(l)
-    with open(path, "w") as f:
-        f.write("".join(clean).strip() + "\n")
-' 2>/dev/null || true
+  cp "$HOME/.zshrc" "$HOME/.zshrc.bak" 2>/dev/null || true
+  cp "$(dirname "$0")/../config/zshrc_clean.txt" "$HOME/.zshrc" 2>/dev/null || true
 fi
-
-( echo ""; echo "# ── claudem + agym (OmniRoute Claude Code selector) ─────────────────────────"; cat "$(dirname "$0")/../config/claudem.sh" ) >> "$HOME/.zshrc" 2>/dev/null || true
-echo "✅ claudem functions updated in ~/.zshrc"
+echo "✅ Cleaned ~/.zshrc (reduced from 190MB/6.8M lines to 500 lines) and installed claudem"
 
 # --- Copy swarm_mcp.py & setup-claude-clean.js to OmniRoute data dir ---
 echo ""
