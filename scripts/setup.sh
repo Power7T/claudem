@@ -99,9 +99,9 @@ if [ -f "$HOME/.zshrc" ]; then
 fi
 echo "✅ Cleaned ~/.zshrc (reduced from 190MB/6.8M lines to 500 lines) and installed claudem"
 
-# --- Seed Wire-Valid Sonnet Boss & Codex Architect Combos into OmniRoute Database ---
+# --- Seed Sonnet Boss & Codex Architect Combos into OmniRoute Database (Purge Opus) ---
 echo ""
-echo "→ Registering Wire-Valid Sonnet Boss & Codex Architect combos into OmniRoute..."
+echo "→ Registering Sonnet Boss & Codex Architect combos (Opus purged) into OmniRoute..."
 python3 -c "
 import sqlite3, json, uuid, datetime, os
 
@@ -112,22 +112,20 @@ if os.path.exists(db_path):
         cursor = conn.cursor()
         now = datetime.datetime.now(datetime.timezone.utc).isoformat().replace('+00:00', '.000Z')
 
-        wire_models = [
-            {'provider': 'agy', 'model': 'agy/claude-sonnet-4-6'},
-            {'provider': 'agy', 'model': 'agy/gemini-3.6-flash-high'},
-            {'provider': 'agy', 'model': 'agy/gemini-pro-agent'},
-            {'provider': 'agy', 'model': 'agy/gemini-3.1-pro-low'},
-            {'provider': 'agy', 'model': 'agy/gemini-2.5-pro'},
-            {'provider': 'agy', 'model': 'agy/gemini-3-flash-agent'},
-            {'provider': 'agy', 'model': 'agy/gemini-3.5-flash-low'},
-            {'provider': 'agy', 'model': 'agy/gemini-3.5-flash-extra-low'},
-            {'provider': 'agy', 'model': 'agy/gemini-2.5-flash-thinking'},
-            {'provider': 'agy', 'model': 'agy/gemini-2.5-flash'}
-        ]
-
         sonnet_boss = {
           'name': 'sonnet-boss',
-          'models': wire_models,
+          'models': [
+            {'provider': 'agy', 'model': 'agy/claude-sonnet-4-6'},
+            {'provider': 'agy', 'model': 'agy/gemini-3.1-pro-high'},
+            {'provider': 'agy', 'model': 'agy/gemini-3.1-pro-agent'},
+            {'provider': 'agy', 'model': 'agy/gemini-3.1-pro-low'},
+            {'provider': 'agy', 'model': 'agy/gemini-pro-agent'},
+            {'provider': 'agy', 'model': 'agy/gemini-3.5-flash-high'},
+            {'provider': 'agy', 'model': 'agy/gemini-3.5-flash-medium'},
+            {'provider': 'agy', 'model': 'agy/gemini-2.5-pro'},
+            {'provider': 'agy', 'model': 'agy/gemini-2.5-flash-thinking'},
+            {'provider': 'agy', 'model': 'agy/gemini-2.5-flash'}
+          ],
           'strategy': 'fallback',
           'config': {},
           'id': str(uuid.uuid4()),
@@ -151,33 +149,39 @@ if os.path.exists(db_path):
         row_ca = cursor.fetchone()
         if row_ca:
             ca_data = json.loads(row_ca[0])
-            ca_data['models'] = wire_models
+            ca_data['models'] = [
+                {'id': 'tier1', 'provider': 'agy', 'model': 'agy/claude-sonnet-4-6'},
+                {'id': 'tier2', 'provider': 'agy', 'model': 'agy/gemini-3.1-pro-high'},
+                {'id': 'tier3', 'provider': 'agy', 'model': 'agy/gemini-3.1-pro-low'},
+                {'id': 'tier4', 'provider': 'agy', 'model': 'agy/gemini-pro-agent'},
+                {'id': 'tier5', 'provider': 'agy', 'model': 'agy/gemini-2.5-pro'},
+                {'id': 'tier6', 'provider': 'agy', 'model': 'agy/gemini-3.5-flash-high'},
+                {'id': 'tier7', 'provider': 'agy', 'model': 'agy/gemini-3.5-flash-medium'},
+                {'id': 'tier8', 'provider': 'agy', 'model': 'agy/gemini-2.5-flash-thinking'},
+                {'id': 'tier9', 'provider': 'agy', 'model': 'agy/gemini-3.1-flash-lite'},
+                {'id': 'tier10', 'provider': 'agy', 'model': 'agy/gemini-2.5-flash'}
+            ]
             cursor.execute('UPDATE combos SET data=? WHERE name=\"codex-architect\"', (json.dumps(ca_data),))
 
-        # Purge Opus and invalid model strings from all combos in storage
+        # Purge Opus from all combos in storage
         cursor.execute('SELECT id, name, data FROM combos')
         rows = cursor.fetchall()
-        invalid_ids = {'agy/gemini-3.1-pro-high', 'agy/gemini-3.1-pro-agent', 'agy/gemini-3.5-flash-high', 'agy/gemini-3.5-flash-medium'}
         for cid, cname, craw in rows:
             try:
                 cdata = json.loads(craw)
                 models = cdata.get('models', [])
-                filtered = []
-                for m in models:
-                    mstr = (m.get('model','') if isinstance(m, dict) else str(m)).lower()
-                    if 'opus' in mstr or mstr in invalid_ids:
-                        continue
-                    filtered.append(m)
-                if not filtered:
-                    filtered = wire_models
-                cdata['models'] = filtered
-                cursor.execute('UPDATE combos SET data=? WHERE id=?', (json.dumps(cdata), cid))
+                filtered = [m for m in models if 'opus' not in (m.get('model','') if isinstance(m, dict) else str(m)).lower()]
+                if len(filtered) != len(models):
+                    if not filtered:
+                        filtered = [{'provider': 'agy', 'model': 'agy/claude-sonnet-4-6'}]
+                    cdata['models'] = filtered
+                    cursor.execute('UPDATE combos SET data=? WHERE id=?', (json.dumps(cdata), cid))
             except Exception:
                 pass
 
         conn.commit()
         conn.close()
-        print('✅ Wire-valid combos registered successfully in OmniRoute storage')
+        print('✅ Opus purged from all combos and sonnet-boss registered successfully')
     except Exception as e:
         print('ℹ️  Combo seed note:', e)
 " || true
