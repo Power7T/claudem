@@ -77,85 +77,14 @@ _PROVIDER_TO_OWNED_BY[mistral]='mistral'
 _PROVIDER_TO_OWNED_BY[openrouter]='openrouter'
 
 _agym_build_table() {
-  local url="${OMNIROUTE_URL:-http://localhost:20128}"
+  local line
 
-  local rest_owned_by=()
-  local configured_providers
-  configured_providers=$(omniroute providers list 2>/dev/null     | sed 's/\[[0-9;]*m//g'     | grep -E '^[a-f0-9]+'     | awk '{print $2}')
+  # 1. 14 curated agy/ models
+  for line in "${_AGY_MODELS[@]}"; do
+    [[ -n "$line" ]] && echo "${line}|agy"
+  done
 
-  if [[ -n "$configured_providers" ]]; then
-    while IFS= read -r pid; do
-      [[ -z "$pid" ]] && continue
-      [[ -n "${_PROVIDER_TO_OWNED_BY[$pid]}" ]] && rest_owned_by+=("${_PROVIDER_TO_OWNED_BY[$pid]}")
-    done <<< "$configured_providers"
-  fi
-
-  local raw_json
-  raw_json=$(curl -s --connect-timeout 4 "$url/v1/models" 2>/dev/null)
-  if [[ -z "$raw_json" ]]; then
-    raw_json='{"data":[]}'
-  fi
-
-  local agy_lines_str
-  agy_lines_str=$(printf '%s\n' "${_AGY_MODELS[@]}")
-  local rest_owned_by_str
-  rest_owned_by_str=$(printf '%s,' "${rest_owned_by[@]}")
-
-  python3 -c '
-import json, sys
-from collections import defaultdict
-
-try:
-    data = json.loads(sys.argv[1])
-except Exception:
-    data = {"data": []}
-
-agy_lines = [l.strip() for l in (sys.argv[2].splitlines() if len(sys.argv) > 2 and sys.argv[2] else [])]
-rest_allow = set(sys.argv[4].split(",")) if len(sys.argv) > 4 and sys.argv[4] else set()
-
-seen = set()
-rows = []
-
-# 1. Always inject agy/ models
-for line in agy_lines:
-    if line and line.strip():
-        parts = line.split("|")
-        if len(parts) < 4: continue
-        mid = parts[0]
-        if mid in seen: continue
-        seen.add(mid)
-        rows.append(line + "|agy")
-
-groups = defaultdict(list)
-if isinstance(data, dict):
-    for m in data.get("data", []):
-        if not isinstance(m, dict): continue
-        mid = m.get("id", "")
-        ob  = m.get("owned_by", "")
-        if not mid or mid in seen: continue
-        # Ignore raw provider entries (antigravity/*, openrouter/*), keep only extra custom combos
-        if ob != "combo" and not mid.startswith("combo/"): continue
-        seen.add(mid)
-        name = m.get("name") or mid
-        ctx  = m.get("context_length") or "?"
-        caps = m.get("capabilities", {})
-        tags = []
-        if caps.get("vision"):   tags.append("v")
-        if caps.get("thinking"): tags.append("t")
-        if ctx != "?":
-            try:
-                ctx = str(int(ctx)//1000) + "K"
-            except Exception:
-                pass
-        groups["coding-combos"].append(mid + "|" + name + "|" + str(ctx) + "|" + ",".join(tags) + "|coding-combos")
-
-for ob in sorted(groups.keys()):
-    rows.extend(groups[ob])
-
-print("\n".join(rows))
-' "$raw_json" "$agy_lines_str" "1" "$rest_owned_by_str" 2>/dev/null
-
-  # Inject dynamic numeric profiles at the top of combos
+  # 2. Dynamic numeric profiles (Profile 1 .. Profile 5)
   local d
   for d in "$HOME"/.claude/profiles/[0-9]*(N); do
     [[ -d "$d" ]] || continue
@@ -163,11 +92,11 @@ print("\n".join(rows))
     echo "combo/$name|⚡ Profile $name   · dedicated history with dynamic model selection|1048K|t|coding-combos"
   done
 
-  # Inject coding combos as a separate section at the bottom
-  for combo_line in "${_CODING_COMBOS[@]}"; do
-    combo_line="${combo_line//\"/}"
-    combo_line="${combo_line//\'/}"
-    echo "${combo_line}|coding-combos"
+  # 3. Curated coding combos
+  for line in "${_CODING_COMBOS[@]}"; do
+    line="${line//\"/}"
+    line="${line//\'/}"
+    echo "${line}|coding-combos"
   done
 }
 
