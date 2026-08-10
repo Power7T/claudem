@@ -99,6 +99,59 @@ if [ -f "$HOME/.zshrc" ]; then
 fi
 echo "✅ Cleaned ~/.zshrc (reduced from 190MB/6.8M lines to 500 lines) and installed claudem"
 
+# --- Seed Sonnet Boss Combo into OmniRoute Database ---
+echo ""
+echo "→ Registering Sonnet Boss combo & failover cascade into OmniRoute..."
+python3 -c "
+import sqlite3, json, uuid, datetime, os
+
+db_path = os.path.expanduser('~/.omniroute/storage.sqlite')
+if os.path.exists(db_path):
+    try:
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        now = datetime.datetime.now(datetime.timezone.utc).isoformat().replace('+00:00', '.000Z')
+
+        combo_data = {
+          'name': 'sonnet-boss',
+          'models': [
+            {'provider': 'agy', 'model': 'agy/claude-sonnet-4-6'},
+            {'provider': 'agy', 'model': 'agy/gemini-3.1-pro-high'},
+            {'provider': 'agy', 'model': 'agy/gemini-3.1-pro-agent'},
+            {'provider': 'agy', 'model': 'agy/gemini-3.1-pro-low'},
+            {'provider': 'agy', 'model': 'agy/gemini-pro-agent'},
+            {'provider': 'agy', 'model': 'agy/gemini-3.5-flash-high'},
+            {'provider': 'agy', 'model': 'agy/gemini-3.5-flash-medium'},
+            {'provider': 'agy', 'model': 'agy/gemini-2.5-pro'},
+            {'provider': 'agy', 'model': 'agy/gemini-2.5-flash-thinking'},
+            {'provider': 'agy', 'model': 'agy/gemini-2.5-flash'}
+          ],
+          'strategy': 'fallback',
+          'config': {},
+          'id': str(uuid.uuid4()),
+          'isHidden': False,
+          'sortOrder': 5,
+          'createdAt': now,
+          'updatedAt': now,
+          'version': 2,
+          'context_cache_protection': True
+        }
+
+        cursor.execute('SELECT id FROM combos WHERE name=\"sonnet-boss\"')
+        existing = cursor.fetchone()
+
+        if existing:
+            cursor.execute('UPDATE combos SET data=? WHERE name=\"sonnet-boss\"', (json.dumps(combo_data),))
+        else:
+            cursor.execute('INSERT INTO combos (id, name, data, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)',
+                           (combo_data['id'], 'sonnet-boss', json.dumps(combo_data), 5, now, now))
+        conn.commit()
+        conn.close()
+        print('✅ sonnet-boss combo registered successfully in OmniRoute storage')
+    except Exception as e:
+        print('ℹ️  Combo seed note:', e)
+" || true
+
 # --- Copy swarm_mcp.py & setup-claude-clean.js to OmniRoute data dir ---
 echo ""
 echo "→ Installing Swarm MCP server & sync helper..."
@@ -120,7 +173,7 @@ if pgrep -f "omniroute" &>/dev/null; then
   pkill -f "omniroute" 2>/dev/null || true
   sleep 1
   echo "✅ Stale OmniRoute background process restarted"
-fi 
+fi
 
 # --- OmniRoute Proxy Tool Fixer ---
 echo ""
