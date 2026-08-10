@@ -289,45 +289,32 @@ agym() {
 
 _agym_select_model() {
   local model_table="$1"
-  local -a all_ids=() all_labels=()
-  local last_ob=""
-  local mid mname mctx mcaps mob capstr label formatted
+  local prompt_title="${2:-Select a target model/combo for this session (Ctrl-C to cancel):}"
 
-  while IFS='|' read -r mid mname mctx mcaps mob; do
-
-    if [[ "$mob" != "$last_ob" ]]; then
-      label="${_OMNIROUTE_PROVIDER_LABELS[$mob]:-$mob}"
-      all_ids+=("---")
-      all_labels+=("── $label")
-      last_ob="$mob"
-    fi
-    all_ids+=("$mid")
-    capstr=""
-    [[ "$mcaps" == *"v"* ]] && capstr+="[v] "
-    [[ "$mcaps" == *"t"* ]] && capstr+="[t]"
-    formatted=$(printf '%-38s  %-6s  %s' "$mname" "$mctx" "$capstr")
-    all_labels+=("$formatted")
-  done <<< "$model_table"
-
-  echo "  Select a target model/combo for this session (Ctrl-C to cancel):" >&2
+  echo "" >&2
+  echo "  $prompt_title" >&2
   echo "" >&2
   local i=1
   local -a selectable_ids=()
-  local idx=1
-  for id in "${all_ids[@]}"; do
-    label="${all_labels[$idx]}"
-    if [[ "$id" == "---" ]]; then
-      printf "
-  %s
-" "$label" >&2
-    else
-      printf "    %3d.  %s
-" "$i" "$label" >&2
-      selectable_ids+=("$id")
-      (( i++ ))
+  local last_ob=""
+  local mid mname mctx mcaps mob capstr label
+
+  while IFS='|' read -r mid mname mctx mcaps mob; do
+    [[ -z "$mid" ]] && continue
+    [[ "$mid" == combo/[0-9]* ]] && continue
+
+    if [[ "$mob" != "$last_ob" ]]; then
+      label="${_OMNIROUTE_PROVIDER_LABELS[$mob]:-$mob}"
+      printf "\n  ── %s ────────────────────────────────────────\n" "$label" >&2
+      last_ob="$mob"
     fi
-    (( idx++ ))
-  done
+    capstr=""
+    [[ "$mcaps" == *"v"* ]] && capstr+="[v] "
+    [[ "$mcaps" == *"t"* ]] && capstr+="[t]"
+    printf "    %3d.  %-38s  %-6s  %s\n" "$i" "$mname" "$mctx" "$capstr" >&2
+    selectable_ids[$i]="$mid"
+    (( i++ ))
+  done <<< "$model_table"
 
   echo "" >&2
   local max_choice=$(( i - 1 ))
@@ -460,6 +447,21 @@ claudem() {
       mkdir -p "$profile_dir"
       node "$HOME/.omniroute/setup-claude-clean.js" >/dev/null 2>&1
     fi
+
+    local selected_model
+    selected_model=$(_agym_select_model "$model_table" "Select target model/combo for Profile $profile_name:")
+    if [[ -z "$selected_model" ]]; then
+      echo "  Canceled."
+      return 0
+    fi
+    if [[ "$selected_model" == combo/* ]]; then
+      export ANTHROPIC_HEADER_X_ROUTE_MODEL="$selected_model"
+      extra_args=("--model" "agy/claude-sonnet-4-6" "${extra_args[@]}")
+    else
+      unset ANTHROPIC_HEADER_X_ROUTE_MODEL
+      extra_args=("--model" "$selected_model" "${extra_args[@]}")
+    fi
+    echo "  🎯 Target model selected: $selected_model"
   fi
 
   local -a launch_opts=("--profile" "$profile_name")
