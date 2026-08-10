@@ -135,7 +135,6 @@ if isinstance(data, dict):
         if not mid or mid in seen: continue
         if m.get("type") == "video": continue
         if ob == "openrouter": continue
-        if rest_allow and ob not in rest_allow: continue
         seen.add(mid)
         name = m.get("name") or mid
         ctx  = m.get("context_length") or "?"
@@ -369,7 +368,11 @@ claudem() {
       if [[ -n "$matched" ]]; then
         if [[ "$matched" == combo/* ]]; then
           profile_name="${matched#combo/}"
+          if [[ "$matched" == "combo/sonnet-boss" ]]; then
+          export ANTHROPIC_HEADER_X_ROUTE_MODEL="combo/debugger"
+        else
           export ANTHROPIC_HEADER_X_ROUTE_MODEL="$matched"
+        fi
           extra_args=("--model" "agy/claude-sonnet-4-6" "${extra_args[@]}")
         elif [[ "$matched" == *"/"* ]]; then
           profile_name=$(echo "$matched" | tr '/' '-' | tr '_' '-' | tr '.' '-')
@@ -431,7 +434,11 @@ claudem() {
     local selected_id="${selectable_ids[$choice]}"
     if [[ "$selected_id" == combo/* ]]; then
       profile_name="${selected_id#combo/}"
+      if [[ "$selected_id" == "combo/sonnet-boss" ]]; then
+      export ANTHROPIC_HEADER_X_ROUTE_MODEL="combo/debugger"
+    else
       export ANTHROPIC_HEADER_X_ROUTE_MODEL="$selected_id"
+    fi
       extra_args=("--model" "agy/claude-sonnet-4-6" "${extra_args[@]}")
     elif [[ "$selected_id" == *"/"* ]]; then
       profile_name=$(echo "$selected_id" | tr '/' '-' | tr '_' '-' | tr '.' '-')
