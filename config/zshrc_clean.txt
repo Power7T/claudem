@@ -19,6 +19,8 @@ export NVM_DIR="/Users/chandan/.nvm"
 # Custom Aliases
 alias fs-admin="python3 /Users/chandan/Documents/premium-deals/TelegramScript/firestick_admin.py"
 
+# ── claudem + agym (OmniRoute Claude Code selector) ─────────────────────────
+# ── OmniRoute Configuration ────────────────────────────────────────────────────
 export DATA_DIR="$HOME/.omniroute"
 export GEMINI_BASE_URL="http://localhost:20128/v1"
 export OMNIROUTE_URL="http://localhost:20128"
@@ -96,6 +98,29 @@ _PROVIDER_TO_OWNED_BY[groq]='groq'
 _PROVIDER_TO_OWNED_BY[mistral]='mistral'
 _PROVIDER_TO_OWNED_BY[openrouter]='openrouter'
 
+_agym_build_table() {
+  local line
+
+  # 1. 14 curated agy/ models
+  for line in "${_AGY_MODELS[@]}"; do
+    [[ -n "$line" ]] && echo "${line}|agy"
+  done
+
+  # 2. Dynamic numeric profiles (Profile 1 .. Profile 5)
+  local d
+  for d in "$HOME"/.claude/profiles/[0-9]*(N); do
+    [[ -d "$d" ]] || continue
+    local name="${d##*/}"
+    echo "combo/$name|⚡ Profile $name   · dedicated history with dynamic model selection|1048K|t|coding-combos"
+  done
+
+  # 3. Curated coding combos
+  for line in "${_CODING_COMBOS[@]}"; do
+    line="${line//\"/}"
+    line="${line//\'/}"
+    echo "${line}|coding-combos"
+  done
+}
 
 # ── agym ───────────────────────────────────────────────────────────────────────
 agym() {
@@ -256,3 +281,163 @@ _agym_select_model() {
 
 unalias claudem 2>/dev/null || true
 unfunction claudem 2>/dev/null || true
+claudem() {
+  unset ANTHROPIC_HEADER_X_ROUTE_MODEL
+  local url="${OMNIROUTE_URL:-http://localhost:20128}"
+  local model_table
+  model_table=$(_agym_build_table)
+  if [[ -z "$model_table" ]]; then
+    echo "🔄 OmniRoute is offline. Auto-starting background server..."
+    omniroute serve --daemon >/dev/null 2>&1 || nohup omniroute serve > "$HOME/.omniroute/server.log" 2>&1 &
+    sleep 3
+    model_table=$(_agym_build_table)
+    if [[ -z "$model_table" ]]; then
+      echo "❌ Failed to auto-start OmniRoute. Try manually: omniroute serve"
+      return 1
+    fi
+  fi
+
+  local profile_name=""
+  local extra_args=()
+  local mode=""
+
+  if [[ "$1" == "command" ]]; then
+    mode="command"
+    shift
+  fi
+
+  if [[ $# -gt 0 ]]; then
+    local search_term="$1"
+    shift
+
+    if [[ "$search_term" =~ ^[1-5]$ ]]; then
+      profile_name="$search_term"
+    else
+      local matched
+      matched=$(echo "$model_table" | awk -F'|' -v q="$search_term"         'tolower($1) ~ tolower(q) || tolower($2) ~ tolower(q) {print $1; exit}')
+
+      if [[ -n "$matched" ]]; then
+        if [[ "$matched" == combo/* ]]; then
+          profile_name="${matched#combo/}"
+          if [[ "$matched" == "combo/sonnet-boss" ]]; then
+          export ANTHROPIC_HEADER_X_ROUTE_MODEL="combo/debugger"
+        else
+          export ANTHROPIC_HEADER_X_ROUTE_MODEL="$matched"
+        fi
+          extra_args=("--model" "agy/claude-sonnet-4-6" "${extra_args[@]}")
+        elif [[ "$matched" == *"/"* ]]; then
+          profile_name=$(echo "$matched" | tr '/' '-' | tr '_' '-' | tr '.' '-')
+        else
+          profile_name="$matched"
+        fi
+      else
+        if [[ -d "$HOME/.claude/profiles/$search_term" ]]; then
+          profile_name="$search_term"
+        else
+          echo "⚠️  No model/profile matched '$search_term'."
+          echo "   Available profiles:"
+          ls -1 "$HOME/.claude/profiles/" | grep -v '^\.' | sed 's/^/     • /'
+          return 1
+        fi
+      fi
+    fi
+    extra_args+=("$@")
+  else
+    echo ""
+    echo "  ========================================================"
+    echo "       OmniRoute Claude Code Selector  [claudem]"
+    echo "  ========================================================"
+    echo ""
+
+    echo "  Select a Claude Code profile (Ctrl-C to cancel):"
+    echo ""
+    local i=1
+    local -a selectable_ids=()
+    local last_ob=""
+    local mid mname mctx mcaps mob capstr label
+
+    while IFS='|' read -r mid mname mctx mcaps mob; do
+      [[ -z "$mid" ]] && continue
+      if [[ "$mob" != "$last_ob" ]]; then
+        label="${_OMNIROUTE_PROVIDER_LABELS[$mob]:-$mob}"
+        printf "\n  ── %s ────────────────────────────────────────\n" "$label"
+        last_ob="$mob"
+      fi
+      capstr=""
+      [[ "$mcaps" == *"v"* ]] && capstr+="[v] "
+      [[ "$mcaps" == *"t"* ]] && capstr+="[t]"
+      printf "    %3d.  %-38s  %-6s  %s\n" "$i" "$mname" "$mctx" "$capstr"
+      selectable_ids[$i]="$mid"
+      (( i++ ))
+    done <<< "$model_table"
+
+    echo ""
+    local max_choice=$(( i - 1 ))
+    printf "  Enter number [1-%d]: " "$max_choice"
+    local choice
+    read choice
+
+    if ! [[ "$choice" =~ ^[0-9]+$ ]] || (( choice < 1 || choice > max_choice )); then
+      echo "  Canceled."
+      return 0
+    fi
+
+    local selected_id="${selectable_ids[$choice]}"
+    if [[ "$selected_id" == combo/* ]]; then
+      profile_name="${selected_id#combo/}"
+      if [[ "$selected_id" == "combo/sonnet-boss" ]]; then
+      export ANTHROPIC_HEADER_X_ROUTE_MODEL="combo/debugger"
+    else
+      export ANTHROPIC_HEADER_X_ROUTE_MODEL="$selected_id"
+    fi
+      extra_args=("--model" "agy/claude-sonnet-4-6" "${extra_args[@]}")
+    elif [[ "$selected_id" == *"/"* ]]; then
+      profile_name=$(echo "$selected_id" | tr '/' '-' | tr '_' '-' | tr '.' '-')
+    else
+      profile_name="$selected_id"
+    fi
+  fi
+
+  if [[ "$profile_name" =~ ^[0-9]+$ ]]; then
+    local profile_dir="$HOME/.claude/profiles/$profile_name"
+    if [[ ! -d "$profile_dir" ]]; then
+      echo "➕ Profile $profile_name does not exist. Syncing active profiles..."
+      mkdir -p "$profile_dir"
+      node "$HOME/.omniroute/setup-claude-clean.js" >/dev/null 2>&1
+    fi
+
+    local selected_model
+    selected_model=$(_agym_select_model "$model_table" "Select target model/combo for Profile $profile_name:")
+    if [[ -z "$selected_model" ]]; then
+      echo "  Canceled."
+      return 0
+    fi
+    if [[ "$selected_model" == combo/* ]]; then
+      export ANTHROPIC_HEADER_X_ROUTE_MODEL="$selected_model"
+      extra_args=("--model" "agy/claude-sonnet-4-6" "${extra_args[@]}")
+    else
+      unset ANTHROPIC_HEADER_X_ROUTE_MODEL
+      extra_args=("--model" "$selected_model" "${extra_args[@]}")
+    fi
+    echo "  🎯 Target model selected: $selected_model"
+  fi
+
+  local -a launch_opts=("--profile" "$profile_name")
+  if [[ -n "$ANTHROPIC_HEADER_X_ROUTE_MODEL" ]]; then
+    local omni_token=""
+    if [[ -f "$HOME/.omniroute/.env" ]]; then
+      omni_token=$(grep -E '^OMNIROUTE_API_KEY=' "$HOME/.omniroute/.env" | cut -d'=' -f2- | tr -d '\"')
+    fi
+    [[ -z "$omni_token" ]] && omni_token="omniroute-no-auth"
+    launch_opts+=("--token" "${omni_token}__route__${ANTHROPIC_HEADER_X_ROUTE_MODEL}")
+  fi
+
+  if ! curl -s --connect-timeout 2 "${url}/v1/models" >/dev/null 2>&1; then
+    echo "🔄 Starting OmniRoute server daemon..."
+    omniroute serve --daemon >/dev/null 2>&1 || true
+    sleep 2
+  fi
+
+  echo "  🚀 Launching Claude Code → profile: $profile_name"
+  omniroute launch "${launch_opts[@]}" -- --permission-mode auto "${extra_args[@]}"
+}
