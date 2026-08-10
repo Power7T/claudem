@@ -293,7 +293,6 @@ _agym_select_model() {
   local mid mname mctx mcaps mob capstr label formatted
 
   while IFS='|' read -r mid mname mctx mcaps mob; do
-    [[ "$mid" == "combo/1" ]] && continue
 
     if [[ "$mob" != "$last_ob" ]]; then
       label="${_OMNIROUTE_PROVIDER_LABELS[$mob]:-$mob}"
@@ -435,6 +434,7 @@ claudem() {
         printf "\n  %s\n" "$label"
       else
         printf "    %3d.  %s\n" "$i" "$label"
+        selectable_ids+=("$id")
         (( i++ ))
       fi
       (( idx++ ))
@@ -466,25 +466,10 @@ claudem() {
   if [[ "$profile_name" =~ ^[0-9]+$ ]]; then
     local profile_dir="$HOME/.claude/profiles/$profile_name"
     if [[ ! -d "$profile_dir" ]]; then
-      echo "➕ Profile $profile_name does not exist. Creating and bootstrapping..."
+      echo "➕ Profile $profile_name does not exist. Syncing active profiles..."
       mkdir -p "$profile_dir"
-      setup-claude >/dev/null
+      node "$HOME/.omniroute/setup-claude-clean.js" >/dev/null 2>&1
     fi
-
-    local selected_model
-    selected_model=$(_agym_select_model "$model_table")
-    if [[ -z "$selected_model" ]]; then
-      echo "  Canceled."
-      return 0
-    fi
-    if [[ "$selected_model" == combo/* ]]; then
-      export ANTHROPIC_HEADER_X_ROUTE_MODEL="$selected_model"
-      extra_args=("--model" "agy/claude-sonnet-4-6" "${extra_args[@]}")
-    else
-      unset ANTHROPIC_HEADER_X_ROUTE_MODEL
-      extra_args=("--model" "$selected_model" "${extra_args[@]}")
-    fi
-    echo "  🎯 Target model selected: $selected_model"
   fi
 
   local -a launch_opts=("--profile" "$profile_name")
