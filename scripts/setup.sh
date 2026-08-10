@@ -99,9 +99,9 @@ if [ -f "$HOME/.zshrc" ]; then
 fi
 echo "✅ Cleaned ~/.zshrc (reduced from 190MB/6.8M lines to 500 lines) and installed claudem"
 
-# --- Seed Sonnet Boss Combo into OmniRoute Database ---
+# --- Seed Sonnet Boss & Codex Architect Combos into OmniRoute Database ---
 echo ""
-echo "→ Registering Sonnet Boss combo & failover cascade into OmniRoute..."
+echo "→ Registering Sonnet Boss & Codex Architect combos into OmniRoute..."
 python3 -c "
 import sqlite3, json, uuid, datetime, os
 
@@ -112,7 +112,7 @@ if os.path.exists(db_path):
         cursor = conn.cursor()
         now = datetime.datetime.now(datetime.timezone.utc).isoformat().replace('+00:00', '.000Z')
 
-        combo_data = {
+        sonnet_boss = {
           'name': 'sonnet-boss',
           'models': [
             {'provider': 'agy', 'model': 'agy/claude-sonnet-4-6'},
@@ -138,16 +138,34 @@ if os.path.exists(db_path):
         }
 
         cursor.execute('SELECT id FROM combos WHERE name=\"sonnet-boss\"')
-        existing = cursor.fetchone()
-
-        if existing:
-            cursor.execute('UPDATE combos SET data=? WHERE name=\"sonnet-boss\"', (json.dumps(combo_data),))
+        existing_sb = cursor.fetchone()
+        if existing_sb:
+            cursor.execute('UPDATE combos SET data=? WHERE name=\"sonnet-boss\"', (json.dumps(sonnet_boss),))
         else:
             cursor.execute('INSERT INTO combos (id, name, data, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)',
-                           (combo_data['id'], 'sonnet-boss', json.dumps(combo_data), 5, now, now))
+                           (sonnet_boss['id'], 'sonnet-boss', json.dumps(sonnet_boss), 5, now, now))
+
+        cursor.execute('SELECT data FROM combos WHERE name=\"codex-architect\"')
+        row_ca = cursor.fetchone()
+        if row_ca:
+            ca_data = json.loads(row_ca[0])
+            ca_data['models'] = [
+                {'id': 'tier1', 'provider': 'agy', 'model': 'agy/claude-sonnet-4-6'},
+                {'id': 'tier2', 'provider': 'agy', 'model': 'agy/gemini-3.1-pro-high'},
+                {'id': 'tier3', 'provider': 'agy', 'model': 'agy/gemini-3.1-pro-low'},
+                {'id': 'tier4', 'provider': 'agy', 'model': 'agy/gemini-pro-agent'},
+                {'id': 'tier5', 'provider': 'agy', 'model': 'agy/gemini-2.5-pro'},
+                {'id': 'tier6', 'provider': 'agy', 'model': 'agy/gemini-3.5-flash-high'},
+                {'id': 'tier7', 'provider': 'agy', 'model': 'agy/gemini-3.5-flash-medium'},
+                {'id': 'tier8', 'provider': 'agy', 'model': 'agy/gemini-2.5-flash-thinking'},
+                {'id': 'tier9', 'provider': 'agy', 'model': 'agy/gemini-3.1-flash-lite'},
+                {'id': 'tier10', 'provider': 'agy', 'model': 'agy/gemini-2.5-flash'}
+            ]
+            cursor.execute('UPDATE combos SET data=? WHERE name=\"codex-architect\"', (json.dumps(ca_data),))
+
         conn.commit()
         conn.close()
-        print('✅ sonnet-boss combo registered successfully in OmniRoute storage')
+        print('✅ sonnet-boss & codex-architect combos registered successfully in OmniRoute storage')
     except Exception as e:
         print('ℹ️  Combo seed note:', e)
 " || true
