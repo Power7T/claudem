@@ -342,6 +342,8 @@ _agym_select_model() {
   echo "${selectable_ids[$choice]}"
 }
 
+unalias claudem 2>/dev/null || true
+unfunction claudem 2>/dev/null || true
 claudem() {
   unset ANTHROPIC_HEADER_X_ROUTE_MODEL
   local url="${OMNIROUTE_URL:-http://localhost:20128}"

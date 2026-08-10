@@ -77,16 +77,16 @@ echo "→ Applying claudem configuration..."
 
 # Backup existing settings if present
 if [ -f "$HOME/.claude/settings.json" ]; then
-  cp "$HOME/.claude/settings.json" "$HOME/.claude/settings.json.backup"
+  cp "$HOME/.claude/settings.json" "$HOME/.claude/settings.json.backup" 2>/dev/null || true
   echo "  ℹ️  Backed up existing settings.json → settings.json.backup"
 fi
 
 # Replace placeholder with real home path in settings
-sed "s|<your-home>|$HOME|g" "$(dirname "$0")/../config/settings.json" > "$HOME/.claude/settings.json"
+sed "s|<your-home>|$HOME|g" "$(dirname "$0")/../config/settings.json" > "$HOME/.claude/settings.json" 2>/dev/null || true
 echo "✅ settings.json applied"
 
 # Apply CLAUDE.md rules
-cp "$(dirname "$0")/../config/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
+cp "$(dirname "$0")/../config/CLAUDE.md" "$HOME/.claude/CLAUDE.md" 2>/dev/null || true
 echo "✅ CLAUDE.md rules applied"
 
 # --- Add claudem shell functions to .zshrc ---
@@ -94,7 +94,7 @@ echo ""
 echo "→ Installing claudem shell functions to ~/.zshrc..."
 
 if [ -f "$HOME/.zshrc" ]; then
-  python3 -c "
+  python3 -c '
 import os
 path = os.path.expanduser("~/.zshrc")
 if os.path.exists(path):
@@ -113,26 +113,24 @@ if os.path.exists(path):
         clean.append(l)
     with open(path, "w") as f:
         f.write("".join(clean).strip() + "\n")
-" 2>/dev/null || true
+' 2>/dev/null || true
 fi
 
-echo "" >> "$HOME/.zshrc"
-echo "# ── claudem + agym (OmniRoute Claude Code selector) ─────────────────────────" >> "$HOME/.zshrc"
-cat "$(dirname "$0")/../config/claudem.sh" >> "$HOME/.zshrc"
+( echo ""; echo "# ── claudem + agym (OmniRoute Claude Code selector) ─────────────────────────"; cat "$(dirname "$0")/../config/claudem.sh" ) >> "$HOME/.zshrc" 2>/dev/null || true
 echo "✅ claudem functions updated in ~/.zshrc"
 
 # --- Copy swarm_mcp.py & setup-claude-clean.js to OmniRoute data dir ---
 echo ""
 echo "→ Installing Swarm MCP server & sync helper..."
 mkdir -p "$HOME/.omniroute"
-cp "$(dirname "$0")/swarm_mcp.py" "$HOME/.omniroute/swarm_mcp.py"
-cp "$(dirname "$0")/setup-claude-clean.js" "$HOME/.omniroute/setup-claude-clean.js"
-cp "$(dirname "$0")/patch-omniroute.js" "$HOME/.omniroute/patch-omniroute.js"
+cp "$(dirname "$0")/swarm_mcp.py" "$HOME/.omniroute/swarm_mcp.py" 2>/dev/null || true
+cp "$(dirname "$0")/setup-claude-clean.js" "$HOME/.omniroute/setup-claude-clean.js" 2>/dev/null || true
+cp "$(dirname "$0")/patch-omniroute.js" "$HOME/.omniroute/patch-omniroute.js" 2>/dev/null || true
 echo "✅ swarm_mcp.py & setup-claude-clean.js installed to ~/.omniroute/"
 
 echo ""
 echo "→ Bootstrapping & syncing all Claude Code profiles..."
-node "$HOME/.omniroute/setup-claude-clean.js" || true
+node "$(dirname "$0")/setup-claude-clean.js" || true
 echo "✅ Profile sync complete"
 
 # Restart any running OmniRoute server process so Node reloads patched JS code into RAM
@@ -147,7 +145,7 @@ fi
 # --- OmniRoute Proxy Tool Fixer ---
 echo ""
 echo "→ Patching OmniRoute proxy for PascalCase tool name compatibility..."
-node "$HOME/.omniroute/patch-omniroute.js" || true
+node "$(dirname "$0")/patch-omniroute.js" || true
 
 # --- Restart & Start OmniRoute Daemon ---
 echo ""
