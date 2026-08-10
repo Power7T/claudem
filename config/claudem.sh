@@ -408,40 +408,27 @@ claudem() {
     echo "  ========================================================"
     echo ""
 
-    local -a all_ids=() all_labels=()
-    local last_ob=""
-    while IFS='|' read -r mid mname mctx mcaps mob; do
-      if [[ "$mob" != "$last_ob" ]]; then
-        local label="${_OMNIROUTE_PROVIDER_LABELS[$mob]:-$mob}"
-        all_ids+=("---")
-        all_labels+=("── $label")
-        last_ob="$mob"
-      fi
-      all_ids+=("$mid")
-      local capstr=""
-      [[ "$mcaps" == *"v"* ]] && capstr+="[v] "
-      [[ "$mcaps" == *"t"* ]] && capstr+="[t]"
-      local formatted
-      formatted=$(printf '%-38s  %-6s  %s' "$mname" "$mctx" "$capstr")
-      all_labels+=("$formatted")
-    done <<< "$model_table"
-
     echo "  Select a Claude Code profile (Ctrl-C to cancel):"
     echo ""
     local i=1
     local -a selectable_ids=()
-    local idx=1
-    for id in "${all_ids[@]}"; do
-      local label="${all_labels[$idx]}"
-      if [[ "$id" == "---" ]]; then
-        printf "\n  %s\n" "$label"
-      else
-        printf "    %3d.  %s\n" "$i" "$label"
-        selectable_ids+=("$id")
-        (( i++ ))
+    local last_ob=""
+    local mid mname mctx mcaps mob capstr label
+
+    while IFS='|' read -r mid mname mctx mcaps mob; do
+      [[ -z "$mid" ]] && continue
+      if [[ "$mob" != "$last_ob" ]]; then
+        label="${_OMNIROUTE_PROVIDER_LABELS[$mob]:-$mob}"
+        printf "\n  ── %s ────────────────────────────────────────\n" "$label"
+        last_ob="$mob"
       fi
-      (( idx++ ))
-    done
+      capstr=""
+      [[ "$mcaps" == *"v"* ]] && capstr+="[v] "
+      [[ "$mcaps" == *"t"* ]] && capstr+="[t]"
+      printf "    %3d.  %-38s  %-6s  %s\n" "$i" "$mname" "$mctx" "$capstr"
+      selectable_ids[$i]="$mid"
+      (( i++ ))
+    done <<< "$model_table"
 
     echo ""
     local max_choice=$(( i - 1 ))
