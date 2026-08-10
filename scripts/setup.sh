@@ -116,15 +116,18 @@ if os.path.exists(db_path):
           'name': 'sonnet-boss',
           'models': [
             {'provider': 'agy', 'model': 'agy/claude-sonnet-4-6'},
-            {'provider': 'agy', 'model': 'agy/gemini-3.1-pro-high'},
-            {'provider': 'agy', 'model': 'agy/gemini-3.1-pro-agent'},
-            {'provider': 'agy', 'model': 'agy/gemini-3.1-pro-low'},
+            {'provider': 'agy', 'model': 'agy/gemini-3.6-flash-high'},
+            {'provider': 'agy', 'model': 'agy/gemini-3.6-flash-medium'},
+            {'provider': 'agy', 'model': 'agy/gemini-3.6-flash-low'},
             {'provider': 'agy', 'model': 'agy/gemini-pro-agent'},
-            {'provider': 'agy', 'model': 'agy/gemini-3.5-flash-high'},
-            {'provider': 'agy', 'model': 'agy/gemini-3.5-flash-medium'},
-            {'provider': 'agy', 'model': 'agy/gemini-2.5-pro'},
+            {'provider': 'agy', 'model': 'agy/gemini-3.1-pro-low'},
+            {'provider': 'agy', 'model': 'agy/gemini-3-flash-agent'},
+            {'provider': 'agy', 'model': 'agy/gemini-3.5-flash-low'},
+            {'provider': 'agy', 'model': 'agy/gemini-3.5-flash-extra-low'},
+            {'provider': 'agy', 'model': 'agy/gemini-3.1-flash-lite'},
             {'provider': 'agy', 'model': 'agy/gemini-2.5-flash-thinking'},
-            {'provider': 'agy', 'model': 'agy/gemini-2.5-flash'}
+            {'provider': 'agy', 'model': 'agy/gemini-2.5-flash'},
+            {'provider': 'agy', 'model': 'agy/gemini-2.5-flash-lite'}
           ],
           'strategy': 'fallback',
           'config': {},
@@ -151,16 +154,26 @@ if os.path.exists(db_path):
             ca_data = json.loads(row_ca[0])
             ca_data['models'] = [
                 {'id': 'tier1', 'provider': 'agy', 'model': 'agy/claude-sonnet-4-6'},
-                {'id': 'tier2', 'provider': 'agy', 'model': 'agy/gemini-3.1-pro-high'},
-                {'id': 'tier3', 'provider': 'agy', 'model': 'agy/gemini-3.1-pro-low'},
-                {'id': 'tier4', 'provider': 'agy', 'model': 'agy/gemini-pro-agent'},
-                {'id': 'tier5', 'provider': 'agy', 'model': 'agy/gemini-2.5-pro'},
-                {'id': 'tier6', 'provider': 'agy', 'model': 'agy/gemini-3.5-flash-high'},
-                {'id': 'tier7', 'provider': 'agy', 'model': 'agy/gemini-3.5-flash-medium'},
-                {'id': 'tier8', 'provider': 'agy', 'model': 'agy/gemini-2.5-flash-thinking'},
-                {'id': 'tier9', 'provider': 'agy', 'model': 'agy/gemini-3.1-flash-lite'},
-                {'id': 'tier10', 'provider': 'agy', 'model': 'agy/gemini-2.5-flash'}
+                {'id': 'tier2', 'provider': 'agy', 'model': 'agy/gemini-3.6-flash-high'},
+                {'id': 'tier3', 'provider': 'agy', 'model': 'agy/gemini-3.6-flash-medium'},
+                {'id': 'tier4', 'provider': 'agy', 'model': 'agy/gemini-3.6-flash-low'},
+                {'id': 'tier5', 'provider': 'agy', 'model': 'agy/gemini-pro-agent'},
+                {'id': 'tier6', 'provider': 'agy', 'model': 'agy/gemini-3.1-pro-low'},
+                {'id': 'tier7', 'provider': 'agy', 'model': 'agy/gemini-3-flash-agent'},
+                {'id': 'tier8', 'provider': 'agy', 'model': 'agy/gemini-3.5-flash-low'},
+                {'id': 'tier9', 'provider': 'agy', 'model': 'agy/gemini-3.5-flash-extra-low'},
+                {'id': 'tier10', 'provider': 'agy', 'model': 'agy/gemini-3.1-flash-lite'},
+                {'id': 'tier11', 'provider': 'agy', 'model': 'agy/gemini-2.5-flash-thinking'},
+                {'id': 'tier12', 'provider': 'agy', 'model': 'agy/gemini-2.5-flash'},
+                {'id': 'tier13', 'provider': 'agy', 'model': 'agy/gemini-2.5-flash-lite'}
             ]
+            
+            new_tiers = {}
+            for i in range(13):
+                tier_id = f'tier{i+1}'
+                fallback = f'tier{i+2}' if i < 12 else None
+                new_tiers[tier_id] = {'stepId': tier_id, 'fallbackTier': fallback}
+            ca_data['config']['compositeTiers']['tiers'] = new_tiers
             cursor.execute('UPDATE combos SET data=? WHERE name=\"codex-architect\"', (json.dumps(ca_data),))
 
         # Purge Opus from all combos in storage
