@@ -107,10 +107,11 @@ async function main() {
     if (!id) continue;
 
     const isAgy = id.startsWith("agy/");
-    const isTargetCombo = targetCombos.includes(id) && m.owned_by === "combo";
+    const isCombo = m.owned_by === "combo" || id.startsWith("combo/");
 
-    if (isAgy || isTargetCombo) {
-      const profileName = profileNameFromModelId(id);
+    if (isAgy || isCombo) {
+      const rawId = id.startsWith("combo/") ? id : (m.owned_by === "combo" ? `combo/${id}` : id);
+      const profileName = profileNameFromModelId(rawId.replace(/^combo\//, ""));
       const effort = getEffortLevel(id);
 
       const settings = {
@@ -217,11 +218,11 @@ async function main() {
       };
 
       const settingsPath = join(dirPath, "settings.json");
-      writeFileSync(settingsPath, JSON.stringify(mergedSettings, null, 2) + "\n", "utf8");
+      try { writeFileSync(settingsPath, JSON.stringify(mergedSettings, null, 2) + "\n", "utf8"); } catch (e) {}
 
       if (globalClaudeMdContent) {
         const profileClaudeMdPath = join(dirPath, "CLAUDE.md");
-        writeFileSync(profileClaudeMdPath, globalClaudeMdContent, "utf8");
+        try { writeFileSync(profileClaudeMdPath, globalClaudeMdContent, "utf8"); } catch (e) {}
       }
 
       writtenCount++;
