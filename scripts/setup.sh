@@ -93,30 +93,33 @@ echo "✅ CLAUDE.md rules applied"
 echo ""
 echo "→ Installing claudem shell functions to ~/.zshrc..."
 
-# Remove existing claudem block from ~/.zshrc if present and replace with fresh config
 if [ -f "$HOME/.zshrc" ]; then
   python3 -c "
 import os
-path = os.path.expanduser('~/.zshrc')
-with open(path, 'r') as f:
-    c = f.read()
-start = '# ── claudem + agym'
-end = '# ── setup-claude override'
-idx1 = c.find(start)
-idx2 = c.find(end)
-if idx1 != -1 and idx2 != -1:
-    c = c[:idx1] + c[idx2:]
-elif idx1 != -1:
-    c = c[:idx1]
-with open(path, 'w') as f:
-    f.write(c.strip() + '\n')
+path = os.path.expanduser("~/.zshrc")
+if os.path.exists(path):
+    with open(path, "r", errors="ignore") as f:
+        lines = f.readlines()
+    clean = []
+    skip = False
+    for l in lines:
+        if any(k in l for k in ["# ── claudem", "# claudem —", "_agym_build_table", "claudem() {", "agym() {", "_AGY_MODELS="]):
+            skip = True
+            continue
+        if skip:
+            if l.strip() == "}" or (l.startswith("# ── ") and "claudem" not in l and "agym" not in l):
+                skip = False
+            continue
+        clean.append(l)
+    with open(path, "w") as f:
+        f.write("".join(clean).strip() + "\n")
 " 2>/dev/null || true
 fi
 
 echo "" >> "$HOME/.zshrc"
 echo "# ── claudem + agym (OmniRoute Claude Code selector) ─────────────────────────" >> "$HOME/.zshrc"
 cat "$(dirname "$0")/../config/claudem.sh" >> "$HOME/.zshrc"
-echo "✅ claudem functions updated in ~/.zshrc" 
+echo "✅ claudem functions updated in ~/.zshrc"
 
 # --- Copy swarm_mcp.py & setup-claude-clean.js to OmniRoute data dir ---
 echo ""
