@@ -20,6 +20,7 @@ const targetCombos = [
   "web-builder",
   "master-reasoner",
   "pure-thinking",
+  "sonnet-boss",
   "gemini-coder"
 ];
 
@@ -202,7 +203,7 @@ async function main() {
     for (const [profileName, settings] of activeProfilesMap.entries()) {
       const dirPath = join(profilesRoot, profileName);
       if (!existsSync(dirPath)) {
-        mkdirSync(dirPath, { recursive: true });
+        try { mkdirSync(dirPath, { recursive: true }); } catch (e) {}
       }
 
       const mergedSettings = {

@@ -35,6 +35,7 @@ _CODING_COMBOS=(
   "combo/web-builder|🌐 Web Builder   · Stitch MCP + vision models for UI/CSS/React|1048K|v,t"
   "combo/master-reasoner|🧠 Master Reasoner · priority Opus-thinking for logic & architecture|1048K|t"
   "combo/pure-thinking|🧠 Pure Thinking  · pure Opus-thinking with no fallbacks|200K|t"
+  "combo/sonnet-boss|👑 Sonnet Boss    · Sonnet-first priority with Gemini failover|200K|v,t"
   "combo/gemini-coder|🤖 Gemini Coder    · dedicated Gemini models for coding|1048K|t"
 )
 
