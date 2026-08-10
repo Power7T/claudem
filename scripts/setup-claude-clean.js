@@ -108,11 +108,11 @@ async function main() {
     if (!id) continue;
 
     const isAgy = id.startsWith("agy/");
-    const isCombo = m.owned_by === "combo" || id.startsWith("combo/");
+    const comboName = id.replace(/^combo\//, "");
+    const isTargetCombo = targetCombos.includes(comboName) || targetCombos.includes(id);
 
-    if (isAgy || isCombo) {
-      const rawId = id.startsWith("combo/") ? id : (m.owned_by === "combo" ? `combo/${id}` : id);
-      const profileName = profileNameFromModelId(rawId.replace(/^combo\//, ""));
+    if (isAgy || isTargetCombo) {
+      const profileName = profileNameFromModelId(comboName);
       const effort = getEffortLevel(id);
 
       const settings = {
@@ -198,6 +198,16 @@ async function main() {
         globalClaudeMdContent = readFileSync(globalClaudeMdPath, "utf8");
       } catch (e) {}
     }
+
+    // Purge any stale non-target profile directories
+    try {
+      const existingDirs = readdirSync(profilesRoot);
+      for (const dir of existingDirs) {
+        if (!activeProfilesMap.has(dir) && !/^[0-9]+$/.test(dir)) {
+          try { rmSync(join(profilesRoot, dir), { recursive: true, force: true }); } catch (e) {}
+        }
+      }
+    } catch (e) {}
 
     let writtenCount = 0;
     for (const [profileName, settings] of activeProfilesMap.entries()) {
